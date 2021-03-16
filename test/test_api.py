@@ -22,3 +22,9 @@ def test_index(api):
     r = api.requests.get(url=api.url_for(server.index))
     data = json.loads(r.text)
     assert 'jwt_payload' in data.keys()
+
+
+def test_get_users(api):
+    r = api.requests.get(url=api.url_for(server.Users))
+    data = json.loads(r.text)
+    assert isinstance(data, dict)

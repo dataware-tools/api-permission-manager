@@ -5,14 +5,16 @@ build-backend = "poetry.masonry.api"
 [tool.poetry]
 name = "api"
 version = "0.1.0"
-description = "A Responder based API for dataware-tools"
+description = "Permission management API for dataware-tools"
 license = "Apache-2.0"
 authors = [
-    "Daiki Hayashi <hayashi.daiki@hdwlab.co.jp>"
+    "Daiki Hayashi <hayashi.daiki@hdwlab.co.jp>",
+    "Toshimitsu Watanabe",
+    "Yusuke Sakai"
 ]
 readme = 'README.md'
-repository = "https://github.com/dataware-tools/api-template-responder.git"
-homepage = "https://github.com/dataware-tools/api-template-responder"
+repository = "https://github.com/dataware-tools/api-permission-manager.git"
+homepage = "https://github.com/dataware-tools/api-permission-manager"
 keywords = ['template', 'dataware', 'api']
 classifiers=[
     "Programming Language :: Python :: 3.6",
@@ -26,8 +28,10 @@ classifiers=[
 python = ">=3.6.1"
 dataware-tools-api-helper = { git = "https://github.com/dataware-tools/api-helper-python.git", branch = "master" }
 responder = "^2.0.5"
+auth0-python = "^3.14.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.4"
 pytest = "^6.1.1"
 tox = "^3.20.0"
+autopep8 = "^1.5.5"
