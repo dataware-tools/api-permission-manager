@@ -9,6 +9,9 @@ from auth0.v3.management import Auth0
 from dataware_tools_api_helper import get_jwt_payload_from_request
 import responder
 
+from api.schemas import ActionSchema
+from api.settings import ActionType
+
 # Metadata
 description = "An API template."
 terms_of_service = "http://tools.hdwlab.com/terms/"
@@ -176,8 +179,8 @@ class Role():
         pass
 
 
-@api.route('/permissions')
-class Permissions():
+@api.route('/actions')
+class ActionsResource:
     def on_get(self, req: responder.Request, resp: responder.Response):
         """Get permissions.
 
@@ -186,24 +189,37 @@ class Permissions():
             resp (responder.Response): Response
 
         """
-        # TODO: implementation
-        pass
+        actions_schema = ActionSchema(many=True)
+        result = actions_schema.dump(ActionType.list())
+        resp.media = {
+            'actions': result,
+        }
 
 
-@api.route('/permissions/{permission_id}')
-class Permission():
-    def on_get(self, req: responder.Request, resp: responder.Response, *, permission_id: str):
+@api.route('/actions/{action_id}')
+class ActionResource:
+    def on_get(self, req: responder.Request, resp: responder.Response, *, action_id: str):
         """Get permission information.
 
         Args:
             req (responder.Request): Request
             resp (responder.Response): Response
             *
-            permission_id (str): Permission id
+            action_id (str): Action id
 
         """
-        # TODO: implementation
-        pass
+        try:
+            action_data = ActionType[action_id].describe()
+        except KeyError:
+            resp.status_code = 404
+            resp.media = {'reason': f'Action {action_id} does not exist.'}
+            return
+
+        resp.status_code = 200
+        action_schema = ActionSchema()
+
+        result = action_schema.dump(action_data)
+        resp.media = result
 
 
 @api.route('/healthz')
