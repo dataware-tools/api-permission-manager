@@ -29,6 +29,7 @@ python = ">=3.6.1"
 dataware-tools-api-helper = { git = "https://github.com/dataware-tools/api-helper-python.git", branch = "master" }
 responder = "^2.0.5"
 auth0-python = "^3.14.0"
+marshmallow = "^3.10.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.4"
