@@ -3,6 +3,7 @@ from typing import Dict, List
 
 
 class ActionType(Enum):
+    """List of actions."""
     read_only_public = 'Read only public'
     read_all = 'Read all'
     write = 'Write'
@@ -30,7 +31,7 @@ class ActionType(Enum):
             None
 
         Returns:
-            all_actions ()
+            all_actions (List[Dict[str, str]]): List of all actions.
         """
         all_actions = list(map(lambda c: c.describe(), cls))
         return all_actions
