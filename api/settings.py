@@ -2,6 +2,12 @@ from enum import Enum
 from typing import Dict, List
 
 
+DATABASE_SETTING = {
+    'HOST': 'sqlite://db.sqlite3',
+    'MODELS': 'api.models',
+}
+
+
 class ActionType(Enum):
     """List of actions."""
     read_only_public = 'Read only public'
