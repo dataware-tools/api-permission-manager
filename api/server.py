@@ -8,8 +8,17 @@ from auth0.v3.authentication import GetToken
 from auth0.v3.management import Auth0
 from dataware_tools_api_helper import get_jwt_payload_from_request
 import responder
+from marshmallow import ValidationError
+from tortoise import Tortoise
+from tortoise.exceptions import DoesNotExist
 
-from api.schemas import ActionSchema
+from api import settings
+from api.models import UserModel
+from api.schemas import (
+    ActionSchema,
+    UserSchema,
+    UsersResourceInputSchema,
+)
 from api.settings import ActionType
 
 # Metadata
@@ -43,6 +52,19 @@ api = responder.API(
     },
     secret_key=os.environ.get('SECRET_KEY', os.urandom(12))
 )
+
+
+@api.on_event('startup')
+async def start_db_connection():
+    await Tortoise.init(
+        db_url=settings.DATABASE_SETTING['HOST'],
+        modules={'models': [settings.DATABASE_SETTING['MODELS']]}
+    )
+
+
+@api.on_event('shutdown')
+async def close_db_connection():
+    await Tortoise.close_connections()
 
 
 @api.route('/')
@@ -79,9 +101,26 @@ def _get_auth0_client():
     return auth0
 
 
+def _build_search_query(search: str):
+    """Build search query adapted to length of string.
+    
+    Args:
+        search (str): Original search string.
+    
+    Returns:
+        built_query (str): Built query string.
+
+    """
+    if len(search) >= 3:
+        built_query: str = f'*{search}*'
+    else:
+        built_query: str = f'{search}*'
+    return built_query
+
+
 @api.route('/users')
-class Users():
-    def on_get(self, req: responder.Request, resp: responder.Response):
+class UsersResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response):
         """Get users.
 
         Args:
@@ -89,11 +128,45 @@ class Users():
             resp (responder.Response): Response
 
         """
-        # TODO: receive some query string (e.g. per_page)
-        auth0 = _get_auth0_client()
-        users = auth0.users.list()
+        # TODO: Add maximum per_page
+        try:
+            req_param = UsersResourceInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
 
-        resp.media = users
+        auth0 = _get_auth0_client()
+        auth0_response = auth0.users.list(
+            page=req_param['page'],
+            per_page=req_param['per_page'],
+            q=_build_search_query(req_param['search']),
+        )
+        users = auth0_response['users']
+        
+        # Add roles for each user if user exists in table
+        for user in users:
+            try:
+                user_data = await UserModel.get(id=user['user_id'])
+            except DoesNotExist:
+                user_data = None
+
+            if user_data:
+                user['roles'] = user_data.roles
+            else:
+                user['roles'] = []
+
+        # Serialize user objects
+        users_schema = UserSchema(many=True)
+        serialized_users = users_schema.dump(users)
+
+        resp.media = {
+            'page': req_param['page'],
+            'per_page': req_param['per_page'],
+            'length': auth0_response['length'],
+            'total': auth0_response['total'],
+            'users': serialized_users,
+        }
 
 
 @api.route('/users/{user_id}')
