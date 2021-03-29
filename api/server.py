@@ -103,10 +103,10 @@ def _get_auth0_client():
 
 def _build_search_query(search: str):
     """Build search query adapted to length of string.
-    
+
     Args:
         search (str): Original search string.
-    
+
     Returns:
         built_query (str): Built query string.
 
@@ -143,7 +143,7 @@ class UsersResource():
             q=_build_search_query(req_param['search']),
         )
         users = auth0_response['users']
-        
+
         # Add roles for each user if user exists in table
         for user in users:
             try:

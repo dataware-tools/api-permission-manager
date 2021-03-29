@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from tortoise.contrib.test import finalizer, initializer
 from tortoise.contrib import test
 
 from api.models import (
@@ -9,15 +8,6 @@ from api.models import (
     RoleModel,
     PermissionModel,
 )
-
-
-@pytest.fixture(scope='session', autouse=True)
-def initialize_tests(request):
-    '''Initialize tests.
-    Reference: https://tortoise-orm.readthedocs.io/en/latest/contrib/unittest.html?highlight=test#py-test
-    '''
-    initializer(['api.models'], app_label='models')
-    request.addfinalizer(finalizer)
 
 
 class TestUserModel(test.TestCase):
