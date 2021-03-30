@@ -6,6 +6,7 @@ import os
 
 from auth0.v3.authentication import GetToken
 from auth0.v3.management import Auth0
+from auth0.v3.exceptions import Auth0Error
 from dataware_tools_api_helper import get_jwt_payload_from_request
 import responder
 from marshmallow import ValidationError
@@ -169,7 +170,41 @@ class UsersResource():
 
 
 @api.route('/users/{user_id}')
-class User():
+class UserResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response, *, user_id: str):
+        """Get user role.
+
+        Args:
+            req (responder.Request): Request
+            resp (responder.Response): Response
+            *
+            user_id (str): User id
+
+        """
+        auth0 = _get_auth0_client()
+        try:
+            user = auth0.users.get(id=user_id)
+        except Auth0Error as e:
+            resp.status_code = 404
+            resp.media = {'reason': str(e)}
+            return
+
+        # Add roles if user exists in permission database
+        try:
+            user_data = await UserModel.get(id=user['user_id'])
+        except DoesNotExist:
+            user_data = None
+        if user_data:
+            user['roles'] = user_data.roles
+        else:
+            user['roles'] = []
+
+        # Serialize user object
+        user_schema = UserSchema()
+        serialized_user = user_schema.dump(user)
+
+        resp.media = serialized_user
+
     def on_post(self, req: responder.Request, resp: responder.Response, *, user_id: str):
         """Update user role.
 

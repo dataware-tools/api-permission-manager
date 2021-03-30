@@ -80,3 +80,19 @@ class TestUsersResource:
             },
         )
         assert r.status_code == 400
+
+
+class TestUserResource:
+    def test_get_user_200(self):
+        # TODO: Implement
+        # Pended because of Auth0 testing problem
+        pass
+
+    def test_get_user_404(self, api):
+        r = api.requests.get(
+            url=api.url_for(
+                server.UserResource,
+                user_id='user_id_that_does_not_exist',
+            ),
+        )
+        assert r.status_code == 404
