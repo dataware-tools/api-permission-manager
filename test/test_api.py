@@ -19,13 +19,15 @@ def test_index(api):
     assert 'jwt_payload' in data.keys()
 
 
-class TestActionViews:
-    def test_get_actions(self, api):
+class TestActionsResource:
+    def test_get_actions_200(self, api):
         r = api.requests.get(url=api.url_for(server.ActionsResource))
         data = json.loads(r.text)
         assert r.status_code == 200
         assert 'actions' in data.keys()
 
+
+class TestActionResource:
     def test_get_action_200(self, api):
         r = api.requests.get(url=api.url_for(server.ActionResource, action_id='write'))
         assert r.status_code == 200
