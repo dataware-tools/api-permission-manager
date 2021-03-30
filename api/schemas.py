@@ -28,7 +28,7 @@ class UserSchema(Schema):
 
 
 class UsersResourceInputSchema(BasePaginationInputSchema):
-    # Auth0 has limitation on per_page up to 1,000
+    # Auth0 has limitation on per_page up to 100
     per_page = fields.Int(
         missing=settings.PAGINATION['DEFAULT_PER_PAGE'],
         validate=validate.Range(min=1, max=100),
