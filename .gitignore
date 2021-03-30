@@ -45,3 +45,6 @@ doc/source/modules
 # Jupyter Notebook
 .ipynb_checkpoints/
 /examples/dump/*
+
+# sqlite
+db.sqlite3

@@ -25,11 +25,13 @@ classifiers=[
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6.1"
+python = ">=3.7,<4.0"
 dataware-tools-api-helper = { git = "https://github.com/dataware-tools/api-helper-python.git", branch = "master" }
 responder = "^2.0.5"
 auth0-python = "^3.14.0"
 marshmallow = "^3.10.0"
+tortoise-orm = {extras = ["aiosqlite"], version = "^0.17.0"}
+asynctest = "^0.13.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.8.4"
