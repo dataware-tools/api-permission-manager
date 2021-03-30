@@ -128,7 +128,6 @@ class UsersResource():
             resp (responder.Response): Response
 
         """
-        # TODO: Add maximum per_page
         try:
             req_param = UsersResourceInputSchema().load(req.params)
         except ValidationError as e:

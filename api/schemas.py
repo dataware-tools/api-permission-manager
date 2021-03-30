@@ -1,9 +1,11 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
+
+from api import settings
 
 
 class BasePaginationInputSchema(Schema):
     '''Base schema of pagination input.'''
-    per_page = fields.Int(missing=25)
+    per_page = fields.Int(missing=settings.PAGINATION['DEFAULT_PER_PAGE'])
     page = fields.Int(missing=0)
     search = fields.Str(missing='')
 
@@ -26,4 +28,8 @@ class UserSchema(Schema):
 
 
 class UsersResourceInputSchema(BasePaginationInputSchema):
-    pass
+    # Auth0 has limitation on per_page up to 1,000
+    per_page = fields.Int(
+        missing=settings.PAGINATION['DEFAULT_PER_PAGE'],
+        validate=validate.Range(min=1, max=100),
+    )

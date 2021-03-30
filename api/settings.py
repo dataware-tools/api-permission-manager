@@ -8,6 +8,11 @@ DATABASE_SETTING = {
 }
 
 
+PAGINATION = {
+    'DEFAULT_PER_PAGE': 25,
+}
+
+
 class ActionType(Enum):
     """List of actions."""
     read_only_public = 'Read only public'
