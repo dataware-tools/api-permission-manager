@@ -3,6 +3,8 @@
 """Test code."""
 
 import json
+import urllib.parse
+
 import pytest
 
 from api import server
@@ -83,10 +85,19 @@ class TestUsersResource:
 
 
 class TestUserResource:
-    def test_get_user_200(self):
-        # TODO: Implement
-        # Pended because of Auth0 testing problem
-        pass
+    def test_get_user_200(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(
+                server.UserResource,
+                user_id=urllib.parse.quote(setup_testdb['existing_user_id']),
+            ),
+        )
+        assert r.status_code == 200
+
+        data = json.loads(r.text)
+        assert len(data['roles']) > 0
+        assert 'role_id' in data['roles'][0].keys()
+        assert 'name' in data['roles'][0].keys()
 
     def test_get_user_404(self, api):
         r = api.requests.get(

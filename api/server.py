@@ -152,6 +152,7 @@ class UsersResource():
                 user_data = None
 
             if user_data:
+                await user_data.fetch_related('roles')
                 user['roles'] = user_data.roles
             else:
                 user['roles'] = []
@@ -181,6 +182,9 @@ class UserResource():
             user_id (str): User id
 
         """
+        import urllib.parse
+        user_id = urllib.parse.unquote(user_id)
+
         auth0 = _get_auth0_client()
         try:
             user = auth0.users.get(id=user_id)
@@ -191,10 +195,11 @@ class UserResource():
 
         # Add roles if user exists in permission database
         try:
-            user_data = await UserModel.get(id=user['user_id'])
+            user_data = await UserModel.get(id=user_id)
         except DoesNotExist:
             user_data = None
         if user_data:
+            await user_data.fetch_related('roles')
             user['roles'] = user_data.roles
         else:
             user['roles'] = []
