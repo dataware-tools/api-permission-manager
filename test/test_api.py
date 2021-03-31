@@ -125,8 +125,17 @@ class TestUserResource:
         assert 'roles' in data.keys()
         assert len(data['roles']) == 2
 
-    def test_patch_user_400(self, api):
-        pass
+    def test_patch_user_400(self, api, setup_testdb):
+        r = api.requests.patch(
+            url=api.url_for(
+                server.UserResource,
+                user_id=urllib.parse.quote(setup_testdb['existing_user_id']),
+            ),
+            json={
+                'role_ids': 1,
+            },
+        )
+        assert r.status_code == 400
 
     def test_patch_user_404_user(self, api, setup_testdb):
         r = api.requests.patch(
