@@ -9,7 +9,7 @@ def api():
     return server.api
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(autouse=True)
 def initialize_tests(request):
     '''Initialize tests.
     Reference: https://tortoise-orm.readthedocs.io/en/latest/contrib/unittest.html?highlight=test#py-test

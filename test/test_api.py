@@ -107,3 +107,47 @@ class TestUserResource:
             ),
         )
         assert r.status_code == 404
+
+    def test_patch_user_200(self, api, setup_testdb):
+        r = api.requests.patch(
+            url=api.url_for(
+                server.UserResource,
+                user_id=urllib.parse.quote(setup_testdb['existing_user_id']),
+            ),
+            json={
+                'role_ids': [1, 2],
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert 'user_id' in data.keys()
+        assert 'name' in data.keys()
+        assert 'roles' in data.keys()
+        assert len(data['roles']) == 2
+
+    def test_patch_user_400(self, api):
+        pass
+
+    def test_patch_user_404_user(self, api, setup_testdb):
+        r = api.requests.patch(
+            url=api.url_for(
+                server.UserResource,
+                user_id='user_id_that_does_not_exist',
+            ),
+            json={
+                'role_ids': [1, 2],
+            },
+        )
+        assert r.status_code == 404
+
+    def test_patch_user_404_role_id(self, api, setup_testdb):
+        r = api.requests.patch(
+            url=api.url_for(
+                server.UserResource,
+                user_id=urllib.parse.quote(setup_testdb['existing_user_id']),
+            ),
+            json={
+                'role_ids': [1, 2, 1000],
+            },
+        )
+        assert r.status_code == 404

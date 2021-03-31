@@ -24,7 +24,10 @@ class RoleSchema(Schema):
 class UserSchema(Schema):
     user_id = fields.Str()
     name = fields.Str()
-    roles = fields.List(fields.Nested(RoleSchema))
+    roles = fields.List(
+        fields.Nested(RoleSchema),
+        default=[],
+    )
 
 
 class UsersResourceInputSchema(BasePaginationInputSchema):
@@ -33,3 +36,7 @@ class UsersResourceInputSchema(BasePaginationInputSchema):
         missing=settings.PAGINATION['DEFAULT_PER_PAGE'],
         validate=validate.Range(min=1, max=100),
     )
+
+
+class UserResourceOnPatchInputSchema(Schema):
+    role_ids = fields.List(fields.Int())

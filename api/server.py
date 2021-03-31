@@ -3,6 +3,7 @@
 """The API server."""
 
 import os
+import urllib.parse
 
 from auth0.v3.authentication import GetToken
 from auth0.v3.management import Auth0
@@ -14,11 +15,15 @@ from tortoise import Tortoise
 from tortoise.exceptions import DoesNotExist
 
 from api import settings
-from api.models import UserModel
+from api.models import (
+    UserModel,
+    RoleModel,
+)
 from api.schemas import (
     ActionSchema,
     UserSchema,
     UsersResourceInputSchema,
+    UserResourceOnPatchInputSchema,
 )
 from api.settings import ActionType
 
@@ -182,9 +187,10 @@ class UserResource():
             user_id (str): User id
 
         """
-        import urllib.parse
+        # Unquote user_id
         user_id = urllib.parse.unquote(user_id)
 
+        # Get user info from auth0
         auth0 = _get_auth0_client()
         try:
             user = auth0.users.get(id=user_id)
@@ -210,7 +216,7 @@ class UserResource():
 
         resp.media = serialized_user
 
-    def on_post(self, req: responder.Request, resp: responder.Response, *, user_id: str):
+    async def on_patch(self, req: responder.Request, resp: responder.Response, *, user_id: str):
         """Update user role.
 
         Args:
@@ -220,8 +226,55 @@ class UserResource():
             user_id (str): User id
 
         """
-        # TODO: implementation
-        pass
+        # Unquote user_id
+        user_id = urllib.parse.unquote(user_id)
+
+        # Validate request parameters
+        try:
+            json = await req.media()
+            req_param = UserResourceOnPatchInputSchema().load(json)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get user info from auth0
+        auth0 = _get_auth0_client()
+        try:
+            user = auth0.users.get(id=user_id)
+        except Auth0Error as e:
+            resp.status_code = 404
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get or create user
+        user_data, _ = await UserModel.get_or_create(id=user_id)
+
+        # Add roles to permission database
+        if 'role_ids' in req_param.keys():
+            role_ids = req_param['role_ids']
+
+            # Check if all role_ids exists
+            role_ids_not_exist = [role_id for role_id in role_ids if not await RoleModel.exists(id=role_id)]
+            if role_ids_not_exist:
+                # Return error
+                resp.status_code = 404  # TODO: Check if status code suitable
+                resp.media = {'reason': f'Role ids {role_ids_not_exist} does not exist.'}
+                return
+
+            # Update database
+            roles = [await RoleModel.get(id=role_id) for role_id in role_ids]
+            await user_data.roles.add(*roles)
+
+            # Update response
+            await user_data.fetch_related('roles')
+            user['roles'] = user_data.roles
+
+        # Serialize user object
+        user_schema = UserSchema()
+        serialized_user = user_schema.dump(user)
+
+        resp.media = serialized_user
 
 
 @api.route('/roles')
