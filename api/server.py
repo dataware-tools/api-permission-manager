@@ -20,6 +20,7 @@ from api.models import (
 from api.schemas import (
     ActionSchema,
     RolesResourceOnGetInputSchema,
+    RoleContentSchema,
     RoleSchema,
     UserSchema,
     UsersResourceInputSchema,
@@ -267,6 +268,7 @@ class RolesResource():
             return
 
         # Get roles
+        # TODO: Add search
         roles = await RoleModel.all().offset(req_param['page']).limit(req_param['per_page'])
         number_of_total_roles = await RoleModel.all().count()
 
@@ -282,7 +284,7 @@ class RolesResource():
             'roles': serialized_roles,
         }
 
-    def on_post(self, req: responder.Request, resp: responder.Response):
+    async def on_post(self, req: responder.Request, resp: responder.Response):
         """Create role.
 
         Args:
@@ -290,8 +292,23 @@ class RolesResource():
             resp (responder.Response): Response
 
         """
-        # TODO: implementation
-        pass
+        # Validate request parameters
+        try:
+            json = await req.media()
+            req_param = RoleContentSchema().load(json)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Create role object
+        role = await RoleModel.create(**req_param)
+
+        # Serialize role objects
+        role_schema = RoleSchema()
+        serialized_role = role_schema.dump(role)
+
+        resp.media = serialized_role
 
 
 @api.route('/roles/{role_id}')

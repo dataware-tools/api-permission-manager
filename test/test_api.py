@@ -8,6 +8,7 @@ import urllib.parse
 import pytest
 
 from api import server
+from api.settings import ActionType
 
 
 def test_healthz(api):
@@ -84,6 +85,59 @@ class TestRolesResource:
                 'per_page': 25,
                 'page': 'expect 400',
                 'search': '',
+            },
+        )
+        assert r.status_code == 400
+
+    def test_post_roles_201(self, api):
+        r = api.requests.post(
+            url=api.url_for(server.RolesResource),
+            json={
+                'name': 'test role',
+                'description': 'test role',
+                'permissions': [
+                    {
+                        'databases': ['database1', 'database2'],
+                        'actions': [ActionType.read_all.describe(), ActionType.write.describe()],
+                    },
+                ],
+            },
+        )
+        assert r.status_code == 200
+
+        data = json.loads(r.text)
+        assert 'role_id' in data.keys()
+        assert data['name'] == 'test role'
+        assert data['description'] == 'test role'
+        assert len(data['permissions']) > 0
+
+    def test_post_roles_400_invalid_permissions(self, api):
+        r = api.requests.post(
+            url=api.url_for(server.RolesResource),
+            json={
+                'name': 'test role',
+                'description': 'test role',
+                'permissions': [1, 2],
+            },
+        )
+        assert r.status_code == 400
+
+    def test_post_roles_400_name_empty(self, api):
+        r = api.requests.post(
+            url=api.url_for(server.RolesResource),
+            json={
+                'description': 'test role',
+                'permissions': [],
+            },
+        )
+        assert r.status_code == 400
+
+    def test_post_roles_400_permissions_empty(self, api):
+        r = api.requests.post(
+            url=api.url_for(server.RolesResource),
+            json={
+                'name': 'test role',
+                'description': 'test role',
             },
         )
         assert r.status_code == 400

@@ -22,13 +22,17 @@ class PermissionSchema(Schema):
     )
 
 
-class RoleSchema(Schema):
-    role_id = fields.Str(attribute='id')
-    name = fields.Str()
+class RoleContentSchema(Schema):
+    name = fields.Str(required=True)
     description = fields.Str()
     permissions = fields.List(
-        fields.Nested(PermissionSchema)
+        fields.Nested(PermissionSchema),
+        required=True,
     )
+
+
+class RoleSchema(RoleContentSchema):
+    role_id = fields.Str(attribute='id')
 
 
 class RolesResourceOnGetInputSchema(BasePaginationInputSchema):
