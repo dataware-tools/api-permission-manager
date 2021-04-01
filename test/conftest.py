@@ -26,6 +26,8 @@ def auth0_existing_userid():
     auth0 = get_auth0_client()
     auth0_response = auth0.users.list()
     users = auth0_response['users']
+    if len(users) == 0:
+        raise ValueError('Please register at least 1 user to auth0.')
     existing_userid = users[0]['user_id']
     return existing_userid
 
