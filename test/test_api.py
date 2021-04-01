@@ -42,6 +42,53 @@ class TestActionResource:
         assert r.status_code == 404
 
 
+class TestRolesResource:
+    def test_get_roles_200(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 25,
+                'page': 0,
+                'search': '',
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert 'page' in data.keys()
+        assert 'per_page' in data.keys()
+        assert 'length' in data.keys()
+        assert 'total' in data.keys()
+        assert 'roles' in data.keys()
+        assert isinstance(data['roles'], list)
+
+        assert isinstance(data['roles'][0]['permissions'], list)
+
+    def test_get_roles_200_out_of_pages(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 25,
+                'page': 100,
+                'search': '',
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert data['length'] == 0
+        assert len(data['roles']) == 0
+
+    def test_get_roles_400(self, api):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 25,
+                'page': 'expect 400',
+                'search': '',
+            },
+        )
+        assert r.status_code == 400
+
+
 class TestUsersResource:
     def test_get_users_200(self, api):
         r = api.requests.get(

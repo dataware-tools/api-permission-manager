@@ -19,6 +19,8 @@ from api.models import (
 )
 from api.schemas import (
     ActionSchema,
+    RolesResourceOnGetInputSchema,
+    RoleSchema,
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
@@ -247,8 +249,8 @@ class UserResource():
 
 
 @api.route('/roles')
-class Roles():
-    def on_get(self, req: responder.Request, resp: responder.Response):
+class RolesResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response):
         """Get roles.
 
         Args:
@@ -256,8 +258,29 @@ class Roles():
             resp (responder.Response): Response
 
         """
-        # TODO: implementation
-        pass
+        # Validate request parameters
+        try:
+            req_param = RolesResourceOnGetInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get roles
+        roles = await RoleModel.all().offset(req_param['page']).limit(req_param['per_page'])
+        number_of_total_roles = await RoleModel.all().count()
+
+        # Serialize role objects
+        roles_schema = RoleSchema(many=True)
+        serialized_roles = roles_schema.dump(roles)
+
+        resp.media = {
+            'page': req_param['page'],
+            'per_page': req_param['per_page'],
+            'length': len(roles),
+            'total': number_of_total_roles,
+            'roles': serialized_roles,
+        }
 
     def on_post(self, req: responder.Request, resp: responder.Response):
         """Create role.
