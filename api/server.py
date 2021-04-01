@@ -5,8 +5,6 @@
 import os
 import urllib.parse
 
-from auth0.v3.authentication import GetToken
-from auth0.v3.management import Auth0
 from auth0.v3.exceptions import Auth0Error
 from dataware_tools_api_helper import get_jwt_payload_from_request
 import responder
@@ -26,6 +24,10 @@ from api.schemas import (
     UserResourceOnPatchInputSchema,
 )
 from api.settings import ActionType
+from api.utils import (
+    get_auth0_client,
+    build_search_query,
+)
 
 # Metadata
 description = "An API template."
@@ -91,39 +93,6 @@ def echo(_, resp, *, content, resp_type):
         resp.text = content
 
 
-def _get_auth0_client():
-    # env variables should be defined docker-compose.yaml or .env or ...
-    domain = os.environ.get("AUTH0_DOMAIN")
-    non_interactive_client_id = os.environ.get("AUTH0_CLIENT_ID")
-    non_interactive_client_secret = os.environ.get("AUTH0_CLIENT_SECRET")
-
-    get_token = GetToken(domain)
-    token = get_token.client_credentials(non_interactive_client_id,
-                                         non_interactive_client_secret, 'https://{}/api/v2/'.format(domain))
-    mgmt_api_token = token['access_token']
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
-    return auth0
-
-
-def _build_search_query(search: str):
-    """Build search query adapted to length of string.
-
-    Args:
-        search (str): Original search string.
-
-    Returns:
-        built_query (str): Built query string.
-
-    """
-    if len(search) >= 3:
-        built_query: str = f'*{search}*'
-    else:
-        built_query: str = f'{search}*'
-    return built_query
-
-
 @api.route('/users')
 class UsersResource():
     async def on_get(self, req: responder.Request, resp: responder.Response):
@@ -141,11 +110,11 @@ class UsersResource():
             resp.media = {'reason': str(e)}
             return
 
-        auth0 = _get_auth0_client()
+        auth0 = get_auth0_client()
         auth0_response = auth0.users.list(
             page=req_param['page'],
             per_page=req_param['per_page'],
-            q=_build_search_query(req_param['search']),
+            q=build_search_query(req_param['search']),
         )
         users = auth0_response['users']
 
@@ -191,7 +160,7 @@ class UserResource():
         user_id = urllib.parse.unquote(user_id)
 
         # Get user info from auth0
-        auth0 = _get_auth0_client()
+        auth0 = get_auth0_client()
         try:
             user = auth0.users.get(id=user_id)
         except Auth0Error as e:
@@ -239,7 +208,7 @@ class UserResource():
             return
 
         # Get user info from auth0
-        auth0 = _get_auth0_client()
+        auth0 = get_auth0_client()
         try:
             user = auth0.users.get(id=user_id)
         except Auth0Error as e:
