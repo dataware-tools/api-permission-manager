@@ -3,9 +3,9 @@
 """The API server."""
 
 import os
+import urllib.parse
 
-from auth0.v3.authentication import GetToken
-from auth0.v3.management import Auth0
+from auth0.v3.exceptions import Auth0Error
 from dataware_tools_api_helper import get_jwt_payload_from_request
 import responder
 from marshmallow import ValidationError
@@ -13,13 +13,21 @@ from tortoise import Tortoise
 from tortoise.exceptions import DoesNotExist
 
 from api import settings
-from api.models import UserModel
+from api.models import (
+    UserModel,
+    RoleModel,
+)
 from api.schemas import (
     ActionSchema,
     UserSchema,
     UsersResourceInputSchema,
+    UserResourceOnPatchInputSchema,
 )
 from api.settings import ActionType
+from api.utils import (
+    get_auth0_client,
+    build_search_query,
+)
 
 # Metadata
 description = "An API template."
@@ -85,39 +93,6 @@ def echo(_, resp, *, content, resp_type):
         resp.text = content
 
 
-def _get_auth0_client():
-    # env variables should be defined docker-compose.yaml or .env or ...
-    domain = os.environ.get("AUTH0_DOMAIN")
-    non_interactive_client_id = os.environ.get("AUTH0_CLIENT_ID")
-    non_interactive_client_secret = os.environ.get("AUTH0_CLIENT_SECRET")
-
-    get_token = GetToken(domain)
-    token = get_token.client_credentials(non_interactive_client_id,
-                                         non_interactive_client_secret, 'https://{}/api/v2/'.format(domain))
-    mgmt_api_token = token['access_token']
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
-    return auth0
-
-
-def _build_search_query(search: str):
-    """Build search query adapted to length of string.
-
-    Args:
-        search (str): Original search string.
-
-    Returns:
-        built_query (str): Built query string.
-
-    """
-    if len(search) >= 3:
-        built_query: str = f'*{search}*'
-    else:
-        built_query: str = f'{search}*'
-    return built_query
-
-
 @api.route('/users')
 class UsersResource():
     async def on_get(self, req: responder.Request, resp: responder.Response):
@@ -135,11 +110,11 @@ class UsersResource():
             resp.media = {'reason': str(e)}
             return
 
-        auth0 = _get_auth0_client()
+        auth0 = get_auth0_client()
         auth0_response = auth0.users.list(
             page=req_param['page'],
             per_page=req_param['per_page'],
-            q=_build_search_query(req_param['search']),
+            q=build_search_query(req_param['search']),
         )
         users = auth0_response['users']
 
@@ -151,6 +126,7 @@ class UsersResource():
                 user_data = None
 
             if user_data:
+                await user_data.fetch_related('roles')
                 user['roles'] = user_data.roles
             else:
                 user['roles'] = []
@@ -169,8 +145,47 @@ class UsersResource():
 
 
 @api.route('/users/{user_id}')
-class User():
-    def on_post(self, req: responder.Request, resp: responder.Response, *, user_id: str):
+class UserResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response, *, user_id: str):
+        """Get user role.
+
+        Args:
+            req (responder.Request): Request
+            resp (responder.Response): Response
+            *
+            user_id (str): User id
+
+        """
+        # Unquote user_id
+        user_id = urllib.parse.unquote(user_id)
+
+        # Get user info from auth0
+        auth0 = get_auth0_client()
+        try:
+            user = auth0.users.get(id=user_id)
+        except Auth0Error as e:
+            resp.status_code = 404
+            resp.media = {'reason': str(e)}
+            return
+
+        # Add roles if user exists in permission database
+        try:
+            user_data = await UserModel.get(id=user_id)
+        except DoesNotExist:
+            user_data = None
+        if user_data:
+            await user_data.fetch_related('roles')
+            user['roles'] = user_data.roles
+        else:
+            user['roles'] = []
+
+        # Serialize user object
+        user_schema = UserSchema()
+        serialized_user = user_schema.dump(user)
+
+        resp.media = serialized_user
+
+    async def on_patch(self, req: responder.Request, resp: responder.Response, *, user_id: str):
         """Update user role.
 
         Args:
@@ -180,8 +195,55 @@ class User():
             user_id (str): User id
 
         """
-        # TODO: implementation
-        pass
+        # Unquote user_id
+        user_id = urllib.parse.unquote(user_id)
+
+        # Validate request parameters
+        try:
+            json = await req.media()
+            req_param = UserResourceOnPatchInputSchema().load(json)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get user info from auth0
+        auth0 = get_auth0_client()
+        try:
+            user = auth0.users.get(id=user_id)
+        except Auth0Error as e:
+            resp.status_code = 404
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get or create user
+        user_data, _ = await UserModel.get_or_create(id=user_id)
+
+        # Add roles to permission database
+        if 'role_ids' in req_param.keys():
+            role_ids = req_param['role_ids']
+
+            # Check if all role_ids exists
+            role_ids_not_exist = [role_id for role_id in role_ids if not await RoleModel.exists(id=role_id)]
+            if role_ids_not_exist:
+                # Return error
+                resp.status_code = 404  # TODO: Check if status code suitable
+                resp.media = {'reason': f'Role ids {role_ids_not_exist} does not exist.'}
+                return
+
+            # Update database
+            roles = [await RoleModel.get(id=role_id) for role_id in role_ids]
+            await user_data.roles.add(*roles)
+
+            # Update response
+            await user_data.fetch_related('roles')
+            user['roles'] = user_data.roles
+
+        # Serialize user object
+        user_schema = UserSchema()
+        serialized_user = user_schema.dump(user)
+
+        resp.media = serialized_user
 
 
 @api.route('/roles')
