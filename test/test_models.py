@@ -6,7 +6,6 @@ from tortoise.contrib import test
 from api.models import (
     UserModel,
     RoleModel,
-    PermissionModel,
 )
 
 
@@ -43,24 +42,3 @@ class TestRoleModel(test.TestCase):
     async def test_adding_role(self):
         role = await RoleModel.create(name='role')
         assert role.name == 'role'
-
-
-class TestPermissionModel(test.TestCase):
-
-    async def test_adding_permission(self):
-        role = await RoleModel.create(name='role')
-        permission = await PermissionModel.create(
-            role=role,
-            databases=[
-                'database1',
-                'database2',
-                'database3',
-            ],
-            actions=[
-                'action1',
-                'action2',
-                'action3',
-            ],
-        )
-        assert 'database1' in permission.databases
-        assert 'action1' in permission.actions
