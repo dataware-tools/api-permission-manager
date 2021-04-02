@@ -1,12 +1,10 @@
 from enum import Enum
 from typing import Dict, List
 
-
 DATABASE_SETTING = {
     'HOST': 'sqlite://db.sqlite3',
     'MODELS': 'api.models',
 }
-
 
 PAGINATION = {
     'DEFAULT_PER_PAGE': 25,
