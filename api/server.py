@@ -409,7 +409,7 @@ class RoleResource():
 @api.route('/actions')
 class ActionsResource:
     def on_get(self, req: responder.Request, resp: responder.Response):
-        """Get permissions.
+        """Get actions.
 
         Args:
             req (responder.Request): Request
@@ -426,7 +426,7 @@ class ActionsResource:
 @api.route('/actions/{action_id}')
 class ActionResource:
     def on_get(self, req: responder.Request, resp: responder.Response, *, action_id: str):
-        """Get permission information.
+        """Get action information.
 
         Args:
             req (responder.Request): Request
