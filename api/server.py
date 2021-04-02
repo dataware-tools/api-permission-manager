@@ -70,7 +70,7 @@ api = responder.API(
 async def start_db_connection():
     await Tortoise.init(
         db_url=settings.DATABASE_SETTING['HOST'],
-        modules={'models': [settings.DATABASE_SETTING['MODELS']]}
+        modules={'models': settings.DATABASE_SETTING['MODELS']}
     )
 
 

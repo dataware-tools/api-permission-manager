@@ -2,6 +2,7 @@ import pytest
 from tortoise.contrib.test import finalizer, initializer
 
 from api import server
+from api import settings
 from api.settings import ActionType
 from api.utils import get_auth0_client
 
@@ -16,7 +17,7 @@ def initialize_tests(request):
     """Initialize tests.
     Reference: https://tortoise-orm.readthedocs.io/en/latest/contrib/unittest.html?highlight=test#py-test
     """
-    initializer(['api.models'], app_label='models')
+    initializer(settings.DATABASE_SETTING['MODELS'], app_label='models')
     request.addfinalizer(finalizer)
 
 

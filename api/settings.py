@@ -3,7 +3,7 @@ from typing import Dict, List
 
 DATABASE_SETTING = {
     'HOST': 'sqlite://db.sqlite3',
-    'MODELS': 'api.models',
+    'MODELS': ['api.models', 'aerich.models'],
 }
 
 PAGINATION = {
