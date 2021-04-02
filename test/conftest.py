@@ -2,6 +2,7 @@ import pytest
 from tortoise.contrib.test import finalizer, initializer
 
 from api import server
+from api.settings import ActionType
 from api.utils import get_auth0_client
 
 
@@ -37,9 +38,17 @@ async def setup_testdb(auth0_existing_userid):
     from api.models import RoleModel
     role1 = await RoleModel.create(
         name='role1',
+        permissions=[{
+            'databases': ['database1', 'database2'],
+            'actions': [ActionType.read_all.describe(), ActionType.write.describe()],
+        }]
     )
     role2 = await RoleModel.create(
         name='role2',
+        permissions=[{
+            'databases': ['database1', 'database2'],
+            'actions': [ActionType.read_only_public.describe(), ActionType.write.describe()],
+        }]
     )
 
     from api.models import UserModel

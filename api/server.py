@@ -11,6 +11,7 @@ import responder
 from marshmallow import ValidationError
 from tortoise import Tortoise
 from tortoise.exceptions import DoesNotExist
+from tortoise.query_utils import Q
 
 from api import settings
 from api.models import (
@@ -19,6 +20,9 @@ from api.models import (
 )
 from api.schemas import (
     ActionSchema,
+    RolesResourceOnGetInputSchema,
+    RoleContentSchema,
+    RoleSchema,
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
@@ -247,8 +251,8 @@ class UserResource():
 
 
 @api.route('/roles')
-class Roles():
-    def on_get(self, req: responder.Request, resp: responder.Response):
+class RolesResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response):
         """Get roles.
 
         Args:
@@ -256,10 +260,38 @@ class Roles():
             resp (responder.Response): Response
 
         """
-        # TODO: implementation
-        pass
+        # Validate request parameters
+        try:
+            req_param = RolesResourceOnGetInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
 
-    def on_post(self, req: responder.Request, resp: responder.Response):
+        # Get roles
+        roles = RoleModel.all()
+        if req_param['per_page'] > 0:
+            roles = roles.offset(req_param['page']).limit(req_param['per_page'])
+        if req_param['search']:
+            roles = roles.filter(
+                Q(name__contains=req_param['search']) | Q(description__contains=req_param['search'])
+            )
+        roles = await roles.all()
+        number_of_total_roles = await RoleModel.all().count()
+
+        # Serialize role objects
+        roles_schema = RoleSchema(many=True)
+        serialized_roles = roles_schema.dump(roles)
+
+        resp.media = {
+            'page': req_param['page'],
+            'per_page': req_param['per_page'],
+            'length': len(roles),
+            'total': number_of_total_roles,
+            'roles': serialized_roles,
+        }
+
+    async def on_post(self, req: responder.Request, resp: responder.Response):
         """Create role.
 
         Args:
@@ -267,8 +299,23 @@ class Roles():
             resp (responder.Response): Response
 
         """
-        # TODO: implementation
-        pass
+        # Validate request parameters
+        try:
+            json = await req.media()
+            req_param = RoleContentSchema().load(json)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Create role object
+        role = await RoleModel.create(**req_param)
+
+        # Serialize role objects
+        role_schema = RoleSchema()
+        serialized_role = role_schema.dump(role)
+
+        resp.media = serialized_role
 
 
 @api.route('/roles/{role_id}')
