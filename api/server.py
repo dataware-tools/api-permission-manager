@@ -343,7 +343,7 @@ class RoleResource():
 
         resp.media = serialized_role
 
-    def on_post(self, req: responder.Request, resp: responder.Response, *, role_id: str):
+    async def on_patch(self, req: responder.Request, resp: responder.Response, *, role_id: str):
         """Update role information.
 
         Args:
@@ -353,8 +353,35 @@ class RoleResource():
             role_id (str): Role id
 
         """
-        # TODO: implementation
-        pass
+        # Validate request parameters
+        try:
+            json = await req.media()
+            req_param = RoleContentSchema().load(json)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        role_id_int: int = int(role_id)
+
+        # Check existance of role
+        role_exists = await RoleModel.exists(id=role_id_int)
+        if not role_exists:
+            resp.status_code = 404
+            resp.media = {'reason': f'Role roleid={role_id} does not exist.'}
+            return
+
+        # Update role object
+        await RoleModel.filter(id=role_id_int).update(**req_param)
+
+        # Re-get object
+        role = await RoleModel.get(id=role_id_int)
+
+        # Serialize role objects
+        role_schema = RoleSchema()
+        serialized_role = role_schema.dump(role)
+
+        resp.media = serialized_role
 
     def on_delete(self, req: responder.Request, resp: responder.Response, *, role_id: str):
         """Delete role.
