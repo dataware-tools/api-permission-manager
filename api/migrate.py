@@ -4,10 +4,7 @@ from api import settings
 
 
 async def migrate():
-    await Tortoise.init(
-        db_url=settings.DATABASE_SETTING['HOST'],
-        modules={'models': [settings.DATABASE_SETTING['MODELS']]}
-    )
+    await Tortoise.init(config=settings.TORTOISE_ORM)
     await Tortoise.generate_schemas()
 
     print("Success migration!!")

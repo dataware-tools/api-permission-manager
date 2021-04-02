@@ -68,10 +68,7 @@ api = responder.API(
 
 @api.on_event('startup')
 async def start_db_connection():
-    await Tortoise.init(
-        db_url=settings.DATABASE_SETTING['HOST'],
-        modules={'models': settings.DATABASE_SETTING['MODELS']}
-    )
+    await Tortoise.init(config=settings.TORTOISE_ORM)
 
 
 @api.on_event('shutdown')

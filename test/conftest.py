@@ -17,7 +17,10 @@ def initialize_tests(request):
     """Initialize tests.
     Reference: https://tortoise-orm.readthedocs.io/en/latest/contrib/unittest.html?highlight=test#py-test
     """
-    initializer(settings.DATABASE_SETTING['MODELS'], app_label='models')
+    initializer(
+        settings.TORTOISE_ORM['apps']['models']['models'],
+        app_label='models',
+    )
     request.addfinalizer(finalizer)
 
 
