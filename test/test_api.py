@@ -179,6 +179,32 @@ class TestRolesResource:
         assert r.status_code == 400
 
 
+class TestRoleResource:
+    def test_get_role_200(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(
+                server.RoleResource,
+                role_id=1,
+            ),
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert 'role_id' in data.keys()
+        assert 'name' in data.keys()
+        assert 'description' in data.keys()
+        assert 'permissions' in data.keys()
+        assert len(data['permissions']) == 1
+
+    def test_get_role_404(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(
+                server.RoleResource,
+                role_id=10000000,
+            ),
+        )
+        assert r.status_code == 404
+
+
 class TestUsersResource:
     def test_get_users_200(self, api):
         r = api.requests.get(

@@ -319,8 +319,8 @@ class RolesResource():
 
 
 @api.route('/roles/{role_id}')
-class Role():
-    def on_get(self, req: responder.Request, resp: responder.Response, *, role_id: str):
+class RoleResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response, *, role_id: str):
         """Get role information.
 
         Args:
@@ -330,8 +330,18 @@ class Role():
             role_id (str): Role id
 
         """
-        # TODO: implementation
-        pass
+        # Get role object
+        role = await RoleModel.get_or_none(id=int(role_id))
+        if role is None:
+            resp.status_code = 404
+            resp.media = {'reason': f'Role roleid={role_id} does not exist.'}
+            return
+
+        # Serialize role objects
+        role_schema = RoleSchema()
+        serialized_role = role_schema.dump(role)
+
+        resp.media = serialized_role
 
     def on_post(self, req: responder.Request, resp: responder.Response, *, role_id: str):
         """Update role information.

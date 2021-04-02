@@ -32,7 +32,7 @@ class RoleContentSchema(Schema):
 
 
 class RoleSchema(RoleContentSchema):
-    role_id = fields.Str(attribute='id')
+    role_id = fields.Int(attribute='id')
 
 
 class RolesResourceOnGetInputSchema(BasePaginationInputSchema):
