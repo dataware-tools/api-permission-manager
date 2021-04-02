@@ -34,7 +34,7 @@ from api.utils import (
 )
 
 # Metadata
-description = "An API template."
+description = "An API for managing permission information."
 terms_of_service = "http://tools.hdwlab.com/terms/"
 contact = {
     "name": "API Support",
@@ -48,7 +48,7 @@ license = {
 
 # Initialize app
 api = responder.API(
-    title="API Template",
+    title="api-permission-manager",
     version="1.0",
     openapi="3.0.2",
     docs_route='/docs',
@@ -409,7 +409,7 @@ class RoleResource():
 @api.route('/actions')
 class ActionsResource:
     def on_get(self, req: responder.Request, resp: responder.Response):
-        """Get permissions.
+        """Get actions.
 
         Args:
             req (responder.Request): Request
@@ -426,7 +426,7 @@ class ActionsResource:
 @api.route('/actions/{action_id}')
 class ActionResource:
     def on_get(self, req: responder.Request, resp: responder.Response, *, action_id: str):
-        """Get permission information.
+        """Get action information.
 
         Args:
             req (responder.Request): Request
