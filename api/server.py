@@ -11,6 +11,7 @@ import responder
 from marshmallow import ValidationError
 from tortoise import Tortoise
 from tortoise.exceptions import DoesNotExist
+from tortoise.query_utils import Q
 
 from api import settings
 from api.models import (
@@ -268,8 +269,14 @@ class RolesResource():
             return
 
         # Get roles
-        # TODO: Add search
-        roles = await RoleModel.all().offset(req_param['page']).limit(req_param['per_page'])
+        roles = RoleModel.all()
+        if req_param['per_page'] > 0:
+            roles = roles.offset(req_param['page']).limit(req_param['per_page'])
+        if req_param['search']:
+            roles = roles.filter(
+                Q(name__contains=req_param['search']) | Q(description__contains=req_param['search'])
+            )
+        roles = await roles.all()
         number_of_total_roles = await RoleModel.all().count()
 
         # Serialize role objects

@@ -78,6 +78,42 @@ class TestRolesResource:
         assert data['length'] == 0
         assert len(data['roles']) == 0
 
+    def test_get_roles_200_with_search_does_not_exist(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'search': 'keyword that does not exist',
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert data['length'] == 0
+        assert len(data['roles']) == 0
+
+    def test_get_roles_200_with_search_does_exist(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'search': 'role',
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert data['length'] == 2
+        assert len(data['roles']) == 2
+
+    def test_get_roles_200_with_per_page_0(self, api, setup_testdb):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 0,
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert data['length'] == 2
+        assert len(data['roles']) == 2
+
     def test_get_roles_400(self, api):
         r = api.requests.get(
             url=api.url_for(server.RolesResource),
