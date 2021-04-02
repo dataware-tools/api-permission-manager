@@ -31,4 +31,5 @@ COPY . /opt/app
 ENV PYTHONPATH /opt/app:${PYTHONPATH}
 
 # Default CMD
+ENTRYPOINT ["/opt/app/entrypoint.sh"]
 CMD ["python", "/opt/app/api/server.py"]
