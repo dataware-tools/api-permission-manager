@@ -383,7 +383,7 @@ class RoleResource():
 
         resp.media = serialized_role
 
-    def on_delete(self, req: responder.Request, resp: responder.Response, *, role_id: str):
+    async def on_delete(self, req: responder.Request, resp: responder.Response, *, role_id: str):
         """Delete role.
 
         Args:
@@ -393,8 +393,17 @@ class RoleResource():
             role_id (str): Role id
 
         """
-        # TODO: implementation
-        pass
+        role_id_int: int = int(role_id)
+
+        # Check existance of role
+        role_exists = await RoleModel.exists(id=role_id_int)
+        if not role_exists:
+            resp.status_code = 404
+            resp.media = {'reason': f'Role roleid={role_id} does not exist.'}
+            return
+
+        # Delete object
+        await RoleModel.filter(id=role_id_int).delete()
 
 
 @api.route('/actions')

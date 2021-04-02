@@ -233,6 +233,7 @@ class TestRoleResource:
                 role_id=1,
             ),
         )
+        assert r.status_code == 200
         data = json.loads(r.text)
         assert data['name'] == 'new name'
         assert data['description'] == 'new description'
@@ -263,6 +264,33 @@ class TestRoleResource:
                 'description': 'new description',
                 'permissions': [],
             },
+        )
+        assert r.status_code == 404
+
+    def test_delete_role_200(self, api, setup_testdb):
+        r = api.requests.delete(
+            url=api.url_for(
+                server.RoleResource,
+                role_id=1,
+            ),
+        )
+        assert r.status_code == 200
+
+        # Check if role object deleted
+        r = api.requests.get(
+            url=api.url_for(
+                server.RoleResource,
+                role_id=1,
+            ),
+        )
+        assert r.status_code == 404
+
+    def test_delete_role_404(self, api, setup_testdb):
+        r = api.requests.delete(
+            url=api.url_for(
+                server.RoleResource,
+                role_id=10000000,
+            ),
         )
         assert r.status_code == 404
 
