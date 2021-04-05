@@ -31,3 +31,18 @@ $ docker-compose up
 ```
 
 You can update the behavior of your API by editing `api/server.py` while running the server
+
+## How to migrate database changes
+
+[Aerich](https://github.com/tortoise/aerich) is used as a database migration tool.
+After editing model, execute `migrate` command:
+```bash
+$ docker-compose exec api aerich migrate
+```
+
+And upgrade the database:
+```bash
+$ docker-compose exec api aerich upgrade
+```
+
+However, aerich does no support many of database editing commands (e.g. drop table) for SQLite. Use PostgreSQL, MySQL, etc. for enable migration using aerich.

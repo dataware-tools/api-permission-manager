@@ -1,13 +1,20 @@
 from enum import Enum
 from typing import Dict, List
 
-DATABASE_SETTING = {
-    'HOST': 'sqlite://db.sqlite3',
-    'MODELS': 'api.models',
-}
-
 PAGINATION = {
     'DEFAULT_PER_PAGE': 25,
+}
+
+TORTOISE_ORM = {
+    'connections': {
+        'default': 'sqlite://db.sqlite3'
+    },
+    'apps': {
+        'models': {
+            'models': ['api.models', 'aerich.models'],
+            'default_connection': 'default',
+        }
+    },
 }
 
 
