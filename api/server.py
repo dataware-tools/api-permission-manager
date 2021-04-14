@@ -234,6 +234,7 @@ class UserResource():
 
             # Update database
             roles = [await RoleModel.get(id=role_id) for role_id in role_ids]
+            await user_data.roles.clear()
             await user_data.roles.add(*roles)
 
             # Update response
