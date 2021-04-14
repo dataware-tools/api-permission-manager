@@ -87,6 +87,24 @@ class TestUserResource:
         assert 'roles' in data.keys()
         assert len(data['roles']) == 2
 
+    def test_patch_user_200_on_new_user(self, api, auth0_existing_userid):
+        '''Test adding roles to new user on DB.'''
+        r = api.requests.patch(
+            url=api.url_for(
+                server.UserResource,
+                user_id=urllib.parse.quote(auth0_existing_userid),
+            ),
+            json={
+                'role_ids': [],
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert 'user_id' in data.keys()
+        assert 'name' in data.keys()
+        assert 'roles' in data.keys()
+        assert len(data['roles']) == 0
+
     def test_patch_user_400(self, api, setup_testdb):
         r = api.requests.patch(
             url=api.url_for(

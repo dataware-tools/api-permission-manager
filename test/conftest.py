@@ -72,7 +72,6 @@ async def setup_testdb(auth0_existing_userid):
     from api.models import UserModel
     user = await UserModel.create(
         id=auth0_existing_userid,
-        name='test name',
     )
     await user.roles.add(role1, role2, role3, role4)
     return {

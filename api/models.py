@@ -4,7 +4,6 @@ from tortoise import fields
 
 class UserModel(Model):
     id = fields.CharField(max_length=255, pk=True)
-    name = fields.CharField(max_length=255)
     roles: fields.ManyToManyRelation['RoleModel'] = fields.ManyToManyField(
         'models.RoleModel',
         related_name='roles',
