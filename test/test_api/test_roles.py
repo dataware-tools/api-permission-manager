@@ -39,6 +39,35 @@ class TestRolesResource:
         assert data['length'] == 0
         assert len(data['roles']) == 0
 
+    def test_get_roles_200_pagination_contents(self, api, setup_testdb):
+        # Get role1 for the first page
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 2,
+                'page': 0,
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert len(data['roles']) == 2
+        assert data['roles'][0]['name'] == 'role1'
+        assert data['roles'][1]['name'] == 'role2'
+
+        # Get role2 for the second page
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 2,
+                'page': 1,
+            },
+        )
+        assert r.status_code == 200
+        data = json.loads(r.text)
+        assert len(data['roles']) == 2
+        assert data['roles'][0]['name'] == 'role3'
+        assert data['roles'][1]['name'] == 'role4'
+
     def test_get_roles_200_with_search_does_not_exist(self, api, setup_testdb):
         r = api.requests.get(
             url=api.url_for(server.RolesResource),
@@ -60,8 +89,8 @@ class TestRolesResource:
         )
         assert r.status_code == 200
         data = json.loads(r.text)
-        assert data['length'] == 2
-        assert len(data['roles']) == 2
+        assert data['length'] == 4
+        assert len(data['roles']) == 4
 
     def test_get_roles_200_with_per_page_0(self, api, setup_testdb):
         r = api.requests.get(
@@ -72,8 +101,8 @@ class TestRolesResource:
         )
         assert r.status_code == 200
         data = json.loads(r.text)
-        assert data['length'] == 2
-        assert len(data['roles']) == 2
+        assert data['length'] == 4
+        assert len(data['roles']) == 4
 
     def test_get_roles_400(self, api):
         r = api.requests.get(

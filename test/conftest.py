@@ -54,13 +54,27 @@ async def setup_testdb(auth0_existing_userid):
             'actions': [ActionType.read_only_public.describe(), ActionType.write.describe()],
         }]
     )
+    role3 = await RoleModel.create(
+        name='role3',
+        permissions=[{
+            'databases': ['database1', 'database2'],
+            'actions': [ActionType.read_only_public.describe()],
+        }]
+    )
+    role4 = await RoleModel.create(
+        name='role4',
+        permissions=[{
+            'databases': ['database1', 'database2'],
+            'actions': [ActionType.read_only_public.describe()],
+        }]
+    )
 
     from api.models import UserModel
     user = await UserModel.create(
         id=auth0_existing_userid,
         name='test name',
     )
-    await user.roles.add(role1, role2)
+    await user.roles.add(role1, role2, role3, role4)
     return {
         'existing_user_id': auth0_existing_userid,
     }
