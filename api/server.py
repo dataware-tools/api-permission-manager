@@ -268,7 +268,7 @@ class RolesResource():
         # Get roles
         roles = RoleModel.all()
         if req_param['per_page'] > 0:
-            roles = roles.offset(req_param['page']).limit(req_param['per_page'])
+            roles = roles.offset(req_param['per_page'] * req_param['page']).limit(req_param['per_page'])
         if req_param['search']:
             roles = roles.filter(
                 Q(name__contains=req_param['search']) | Q(description__contains=req_param['search'])
