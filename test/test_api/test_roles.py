@@ -159,7 +159,19 @@ class TestRolesResource:
         )
         assert r.status_code == 400
 
-    # TODO: Permissions with invalid action
+    def test_post_roles_400_action_does_not_exist(self, api):
+        r = api.requests.post(
+            url=api.url_for(server.RolesResource),
+            json={
+                'name': 'test role',
+                'description': 'test role',
+                'permissions': [{
+                    'databases': ['database1', 'database2'],
+                    'actions': ['action_that_does_not_exist'],
+                }],
+            },
+        )
+        assert r.status_code == 400
 
     def test_post_roles_400_name_empty(self, api):
         r = api.requests.post(
