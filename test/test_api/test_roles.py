@@ -24,7 +24,12 @@ class TestRolesResource:
         assert isinstance(data['roles'], list)
 
         assert isinstance(data['roles'][0]['permissions'], list)
-        # TODO: Check content of permissions
+
+        # Check content of permissions
+        assert isinstance(data['roles'][0]['permissions'][0]['databases'], list)
+        assert isinstance(data['roles'][0]['permissions'][0]['actions'], list)
+        assert 'action_id' in data['roles'][0]['permissions'][0]['actions'][0].keys()
+        assert 'name' in data['roles'][0]['permissions'][0]['actions'][0].keys()
 
     def test_get_roles_200_out_of_pages(self, api, setup_testdb):
         r = api.requests.get(
@@ -137,7 +142,12 @@ class TestRolesResource:
         assert data['name'] == 'test role'
         assert data['description'] == 'test role'
         assert len(data['permissions']) > 0
-        # TODO: Check content of permissions
+
+        # Check content of permissions
+        assert isinstance(data['permissions'][0]['databases'], list)
+        assert isinstance(data['permissions'][0]['actions'], list)
+        assert 'action_id' in data['permissions'][0]['actions'][0].keys()
+        assert 'name' in data['permissions'][0]['actions'][0].keys()
 
     def test_post_roles_400_invalid_permissions(self, api):
         r = api.requests.post(
@@ -187,6 +197,12 @@ class TestRoleResource:
         assert 'permissions' in data.keys()
         assert len(data['permissions']) == 1
 
+        # Check content of permissions
+        assert isinstance(data['permissions'][0]['databases'], list)
+        assert isinstance(data['permissions'][0]['actions'], list)
+        assert 'action_id' in data['permissions'][0]['actions'][0].keys()
+        assert 'name' in data['permissions'][0]['actions'][0].keys()
+
     def test_get_role_404(self, api, setup_testdb):
         r = api.requests.get(
             url=api.url_for(
@@ -205,7 +221,12 @@ class TestRoleResource:
             json={
                 'name': 'new name',
                 'description': 'new description',
-                'permissions': [],
+                'permissions': [
+                    {
+                        'databases': ['database1', 'database2'],
+                        'actions': [ActionType.read_all.name],
+                    },
+                ],
             },
         )
         assert r.status_code == 200
@@ -216,7 +237,7 @@ class TestRoleResource:
         assert 'permissions' in data.keys()
         assert data['name'] == 'new name'
         assert data['description'] == 'new description'
-        assert len(data['permissions']) == 0
+        assert len(data['permissions']) == 1
 
         # Re-get object and check content
         r = api.requests.get(
@@ -229,7 +250,13 @@ class TestRoleResource:
         data = json.loads(r.text)
         assert data['name'] == 'new name'
         assert data['description'] == 'new description'
-        assert len(data['permissions']) == 0
+        assert len(data['permissions']) == 1
+
+        # --> Check content of permissions
+        assert isinstance(data['permissions'][0]['databases'], list)
+        assert isinstance(data['permissions'][0]['actions'], list)
+        assert 'action_id' in data['permissions'][0]['actions'][0].keys()
+        assert 'name' in data['permissions'][0]['actions'][0].keys()
 
     def test_patch_role_400(self, api, setup_testdb):
         r = api.requests.patch(
