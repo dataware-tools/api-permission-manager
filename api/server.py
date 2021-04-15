@@ -21,8 +21,8 @@ from api.models import (
 from api.schemas import (
     ActionSchema,
     RolesResourceOnGetInputSchema,
-    RoleContentSchema,
-    RoleSchema,
+    RoleBaseSchema,
+    RoleDetailSchema,
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
@@ -278,7 +278,7 @@ class RolesResource():
         number_of_total_roles = await RoleModel.all().count()
 
         # Serialize role objects
-        roles_schema = RoleSchema(many=True)
+        roles_schema = RoleDetailSchema(many=True)
         serialized_roles = roles_schema.dump(roles)
 
         resp.media = {
@@ -300,7 +300,7 @@ class RolesResource():
         # Validate request parameters
         try:
             json = await req.media()
-            req_param = RoleContentSchema().load(json)
+            req_param = RoleBaseSchema().load(json)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
@@ -310,7 +310,7 @@ class RolesResource():
         role = await RoleModel.create(**req_param)
 
         # Serialize role objects
-        role_schema = RoleSchema()
+        role_schema = RoleDetailSchema()
         serialized_role = role_schema.dump(role)
 
         resp.media = serialized_role
@@ -336,7 +336,7 @@ class RoleResource():
             return
 
         # Serialize role objects
-        role_schema = RoleSchema()
+        role_schema = RoleDetailSchema()
         serialized_role = role_schema.dump(role)
 
         resp.media = serialized_role
@@ -354,7 +354,7 @@ class RoleResource():
         # Validate request parameters
         try:
             json = await req.media()
-            req_param = RoleContentSchema().load(json)
+            req_param = RoleBaseSchema().load(json)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
@@ -376,7 +376,7 @@ class RoleResource():
         role = await RoleModel.get(id=role_id_int)
 
         # Serialize role objects
-        role_schema = RoleSchema()
+        role_schema = RoleDetailSchema()
         serialized_role = role_schema.dump(role)
 
         resp.media = serialized_role

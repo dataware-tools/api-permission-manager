@@ -15,24 +15,31 @@ class ActionSchema(Schema):
     name = fields.Str()
 
 
-class PermissionSchema(Schema):
+class PermissionBaseSchema(Schema):
     databases = fields.List(fields.Str())
+    actions = fields.List(fields.Str())
+
+
+class PermissionDetailSchema(PermissionBaseSchema):
     actions = fields.List(
         fields.Nested(ActionSchema)
     )
 
 
-class RoleContentSchema(Schema):
+class RoleBaseSchema(Schema):
     name = fields.Str(required=True)
     description = fields.Str()
     permissions = fields.List(
-        fields.Nested(PermissionSchema),
+        fields.Nested(PermissionBaseSchema),
         required=True,
     )
 
 
-class RoleSchema(RoleContentSchema):
+class RoleDetailSchema(RoleBaseSchema):
     role_id = fields.Int(attribute='id')
+    permissions = fields.List(
+        fields.Nested(PermissionDetailSchema),
+    )
 
 
 class RolesResourceOnGetInputSchema(BasePaginationInputSchema):
@@ -43,7 +50,7 @@ class UserSchema(Schema):
     user_id = fields.Str()
     name = fields.Str()
     roles = fields.List(
-        fields.Nested(RoleSchema, only=['role_id', 'name', 'description']),
+        fields.Nested(RoleDetailSchema, only=['role_id', 'name', 'description']),
         default=[],
     )
 

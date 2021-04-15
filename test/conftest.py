@@ -44,28 +44,28 @@ async def setup_testdb(auth0_existing_userid):
         name='role1',
         permissions=[{
             'databases': ['database1', 'database2'],
-            'actions': [ActionType.read_all.describe(), ActionType.write.describe()],
+            'actions': [ActionType.read_all.name, ActionType.write.name],
         }]
     )
     role2 = await RoleModel.create(
         name='role2',
         permissions=[{
             'databases': ['database1', 'database2'],
-            'actions': [ActionType.read_only_public.describe(), ActionType.write.describe()],
+            'actions': [ActionType.read_only_public.name, ActionType.write.name],
         }]
     )
     role3 = await RoleModel.create(
         name='role3',
         permissions=[{
             'databases': ['database1', 'database2'],
-            'actions': [ActionType.read_only_public.describe()],
+            'actions': [ActionType.read_only_public.name],
         }]
     )
     role4 = await RoleModel.create(
         name='role4',
         permissions=[{
             'databases': ['database1', 'database2'],
-            'actions': [ActionType.read_only_public.describe()],
+            'actions': [ActionType.read_only_public.name],
         }]
     )
 

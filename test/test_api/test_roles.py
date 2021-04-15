@@ -24,6 +24,7 @@ class TestRolesResource:
         assert isinstance(data['roles'], list)
 
         assert isinstance(data['roles'][0]['permissions'], list)
+        # TODO: Check content of permissions
 
     def test_get_roles_200_out_of_pages(self, api, setup_testdb):
         r = api.requests.get(
@@ -124,7 +125,7 @@ class TestRolesResource:
                 'permissions': [
                     {
                         'databases': ['database1', 'database2'],
-                        'actions': [ActionType.read_all.describe(), ActionType.write.describe()],
+                        'actions': [ActionType.read_all.name, ActionType.write.name],
                     },
                 ],
             },
@@ -136,6 +137,7 @@ class TestRolesResource:
         assert data['name'] == 'test role'
         assert data['description'] == 'test role'
         assert len(data['permissions']) > 0
+        # TODO: Check content of permissions
 
     def test_post_roles_400_invalid_permissions(self, api):
         r = api.requests.post(
