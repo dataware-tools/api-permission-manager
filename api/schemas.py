@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, validate, post_dump
 
 from api import settings
 
@@ -21,9 +21,11 @@ class PermissionBaseSchema(Schema):
 
 
 class PermissionDetailSchema(PermissionBaseSchema):
-    actions = fields.List(
-        fields.Nested(ActionSchema)
-    )
+    @post_dump(pass_many=True)
+    def fix_action_shape(self, data, many):
+        '''Fix action shape to the detailed one.'''
+        data['actions'] = [settings.ActionType[action].describe() for action in data['actions']]
+        return data
 
 
 class RoleBaseSchema(Schema):

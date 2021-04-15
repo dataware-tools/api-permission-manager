@@ -24,7 +24,6 @@ class TestRolesResource:
         assert isinstance(data['roles'], list)
 
         assert isinstance(data['roles'][0]['permissions'], list)
-
         # Check content of permissions
         assert isinstance(data['roles'][0]['permissions'][0]['databases'], list)
         assert isinstance(data['roles'][0]['permissions'][0]['actions'], list)
@@ -159,6 +158,8 @@ class TestRolesResource:
             },
         )
         assert r.status_code == 400
+
+    # TODO: Permissions with invalid action
 
     def test_post_roles_400_name_empty(self, api):
         r = api.requests.post(
