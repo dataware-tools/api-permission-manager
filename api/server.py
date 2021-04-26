@@ -354,7 +354,7 @@ class RoleResource():
         # Validate request parameters
         try:
             req_json = await req.media()
-            req_param = RoleBaseSchema().load(req_json)
+            req_param = RoleBaseSchema().load(req_json, partial=True)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
