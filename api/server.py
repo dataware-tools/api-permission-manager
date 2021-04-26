@@ -201,8 +201,8 @@ class UserResource():
 
         # Validate request parameters
         try:
-            json = await req.media()
-            req_param = UserResourceOnPatchInputSchema().load(json)
+            req_json = await req.media()
+            req_param = UserResourceOnPatchInputSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
@@ -299,8 +299,8 @@ class RolesResource():
         """
         # Validate request parameters
         try:
-            json = await req.media()
-            req_param = RoleBaseSchema().load(json)
+            req_json = await req.media()
+            req_param = RoleBaseSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
@@ -353,8 +353,8 @@ class RoleResource():
         """
         # Validate request parameters
         try:
-            json = await req.media()
-            req_param = RoleBaseSchema().load(json)
+            req_json = await req.media()
+            req_param = RoleBaseSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
