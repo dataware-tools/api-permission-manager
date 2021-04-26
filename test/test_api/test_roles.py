@@ -167,7 +167,7 @@ class TestRolesResource:
                 'description': 'test role',
                 'permissions': [{
                     'databases': ['database1', 'database2'],
-                    'actions': ['action_that_does_not_exist'],
+                    'actions': ['action_id_that_does_not_exist'],
                 }],
             },
         )
@@ -281,6 +281,20 @@ class TestRoleResource:
                 'name': 'new name',
                 'description': 'new description',
                 'permissions': 'invalid permissions',
+            },
+        )
+        assert r.status_code == 400
+
+    def test_patch_role_400_action_does_not_exist(self, api):
+        r = api.requests.patch(
+            url=api.url_for(
+                server.RoleResource,
+                role_id=1,
+            ),
+            json={
+                'permissions': [{
+                    'actions': ['action_id_that_does_not_exist'],
+                }],
             },
         )
         assert r.status_code == 400
