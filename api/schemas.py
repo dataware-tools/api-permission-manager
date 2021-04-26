@@ -11,13 +11,17 @@ class BasePaginationInputSchema(Schema):
 
 
 class ActionSchema(Schema):
-    action_id = fields.Str()
+    action_id = fields.Str(
+        validate=validate.OneOf(settings.ActionType.keys()),
+    )
     name = fields.Str()
 
 
 class PermissionBaseSchema(Schema):
     databases = fields.List(fields.Str())
-    actions = fields.List(fields.Str())
+    actions = fields.List(fields.Str(
+        validate=validate.OneOf(settings.ActionType.keys()),
+    ))
 
 
 class PermissionDetailSchema(PermissionBaseSchema):
