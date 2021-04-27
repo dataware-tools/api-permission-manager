@@ -129,7 +129,7 @@ class TestRolesResource:
                 'permissions': [
                     {
                         'databases': ['database1', 'database2'],
-                        'actions': [ActionType.read_all.name, ActionType.write.name],
+                        'action_ids': [ActionType.read_all.name, ActionType.write.name],
                     },
                 ],
             },
@@ -167,7 +167,7 @@ class TestRolesResource:
                 'description': 'test role',
                 'permissions': [{
                     'databases': ['database1', 'database2'],
-                    'actions': ['action_id_that_does_not_exist'],
+                    'action_ids': ['action_id_that_does_not_exist'],
                 }],
             },
         )
@@ -237,7 +237,7 @@ class TestRoleResource:
                 'permissions': [
                     {
                         'databases': ['database1', 'database2'],
-                        'actions': [ActionType.read_all.name],
+                        'action_ids': [ActionType.read_all.name],
                     },
                 ],
             },
@@ -293,7 +293,7 @@ class TestRoleResource:
             ),
             json={
                 'permissions': [{
-                    'actions': ['action_id_that_does_not_exist'],
+                    'action_ids': ['action_id_that_does_not_exist'],
                 }],
             },
         )
