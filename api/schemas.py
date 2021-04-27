@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate, pre_dump, post_load
+from marshmallow import Schema, fields, validate, pre_dump
 
 from api import settings
 
@@ -23,14 +23,7 @@ class PermissionBaseSchema(Schema):
         fields.Str(
             validate=validate.OneOf(settings.ActionType.keys()),
         ),
-        load_only=True,
     )
-
-    @post_load(pass_many=True)
-    def fix_actions_key_name(self, data, many, **kwargs):
-        '''Fix actions key name from action_ids to actions.'''
-        data['actions'] = data.pop('action_ids')
-        return data
 
 
 class PermissionDetailSchema(PermissionBaseSchema):
@@ -41,7 +34,8 @@ class PermissionDetailSchema(PermissionBaseSchema):
     @pre_dump(pass_many=True)
     def fix_action_shape(self, data, many, **kwargs):
         '''Fix action shape to the detailed one.'''
-        data['actions'] = [settings.ActionType[action].describe() for action in data['actions']]
+        data['actions'] = [settings.ActionType[action].describe() for action in data['action_ids']]
+        data.pop('action_ids')
         return data
 
 
