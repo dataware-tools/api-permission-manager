@@ -21,7 +21,7 @@ class RoleModel(Model):
     permissions = fields.JSONField(
         default={
             'databases': [],
-            'actions': [],
+            'action_ids': [],
         }
     )
 
