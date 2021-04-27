@@ -51,3 +51,16 @@ class ActionType(Enum):
         """
         all_actions = list(map(lambda c: c.describe(), cls))
         return all_actions
+
+    @classmethod
+    def keys(cls):
+        """Returns list of keys of ActionType.
+
+        Args:
+            None
+
+        Returns:
+            all_keys (List[stri]): List of keys of actions.
+        """
+        all_keys = list(map(lambda c: c.name, cls))
+        return all_keys

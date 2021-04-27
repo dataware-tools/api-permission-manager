@@ -19,10 +19,10 @@ class RoleModel(Model):
     name = fields.CharField(max_length=255)
     description = fields.TextField(default='')
     permissions = fields.JSONField(
-        default={
+        default=[{
             'databases': [],
-            'actions': [],
-        }
+            'action_ids': [],
+        }]
     )
 
     users: fields.ManyToManyRelation

@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, validate, pre_dump
 
 from api import settings
 
@@ -11,28 +11,48 @@ class BasePaginationInputSchema(Schema):
 
 
 class ActionSchema(Schema):
-    action_id = fields.Str()
+    action_id = fields.Str(
+        validate=validate.OneOf(settings.ActionType.keys()),
+    )
     name = fields.Str()
 
 
-class PermissionSchema(Schema):
+class PermissionBaseSchema(Schema):
     databases = fields.List(fields.Str())
-    actions = fields.List(
-        fields.Nested(ActionSchema)
+    action_ids = fields.List(
+        fields.Str(
+            validate=validate.OneOf(settings.ActionType.keys()),
+        ),
     )
 
 
-class RoleContentSchema(Schema):
+class PermissionDetailSchema(PermissionBaseSchema):
+    actions = fields.List(
+        fields.Nested(ActionSchema),
+    )
+
+    @pre_dump(pass_many=True)
+    def fix_action_shape(self, data, many, **kwargs):
+        '''Fix action shape to the detailed one.'''
+        data['actions'] = [settings.ActionType[action].describe() for action in data['action_ids']]
+        data.pop('action_ids')
+        return data
+
+
+class RoleBaseSchema(Schema):
     name = fields.Str(required=True)
     description = fields.Str()
     permissions = fields.List(
-        fields.Nested(PermissionSchema),
+        fields.Nested(PermissionBaseSchema),
         required=True,
     )
 
 
-class RoleSchema(RoleContentSchema):
+class RoleDetailSchema(RoleBaseSchema):
     role_id = fields.Int(attribute='id')
+    permissions = fields.List(
+        fields.Nested(PermissionDetailSchema),
+    )
 
 
 class RolesResourceOnGetInputSchema(BasePaginationInputSchema):
@@ -43,7 +63,7 @@ class UserSchema(Schema):
     user_id = fields.Str()
     name = fields.Str()
     roles = fields.List(
-        fields.Nested(RoleSchema, only=['role_id', 'name', 'description']),
+        fields.Nested(RoleDetailSchema, only=['role_id', 'name', 'description']),
         default=[],
     )
 
