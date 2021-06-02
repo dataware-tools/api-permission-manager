@@ -34,6 +34,17 @@ class TestUsersResource:
         )
         assert r.status_code == 400
 
+    def test_prevent_page_0(self, api):
+        r = api.requests.get(
+            url=api.url_for(server.UsersResource),
+            params={
+                'per_page': 25,
+                'page': 0,
+                'search': '',
+            },
+        )
+        assert r.status_code == 400
+
     def test_prevent_per_page_over_100(self, api):
         r = api.requests.get(
             url=api.url_for(server.UsersResource),

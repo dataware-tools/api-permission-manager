@@ -109,12 +109,23 @@ class TestRolesResource:
         assert data['length'] == 4
         assert len(data['roles']) == 4
 
-    def test_get_roles_400(self, api):
+    def test_get_roles_400_illegal_page_string(self, api):
         r = api.requests.get(
             url=api.url_for(server.RolesResource),
             params={
                 'per_page': 25,
                 'page': 'expect 400',
+                'search': '',
+            },
+        )
+        assert r.status_code == 400
+
+    def test_get_roles_400_illegal_page_0(self, api):
+        r = api.requests.get(
+            url=api.url_for(server.RolesResource),
+            params={
+                'per_page': 25,
+                'page': 0,
                 'search': '',
             },
         )
