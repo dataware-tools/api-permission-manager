@@ -10,7 +10,7 @@ class TestUsersResource:
             url=api.url_for(server.UsersResource),
             params={
                 'per_page': 25,
-                'page': 0,
+                'page': 1,
                 'search': '',
             },
         )
@@ -39,7 +39,7 @@ class TestUsersResource:
             url=api.url_for(server.UsersResource),
             params={
                 'per_page': 101,
-                'page': 0,
+                'page': 1,
                 'search': '',
             },
         )

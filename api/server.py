@@ -111,9 +111,12 @@ class UsersResource():
             resp.media = {'reason': str(e)}
             return
 
+        # Limit minimum page to 0
+        page_for_auth0 = max(0, req_param['page'] - 1)
+
         auth0 = get_auth0_client()
         auth0_response = auth0.users.list(
-            page=req_param['page'],
+            page=page_for_auth0,
             per_page=req_param['per_page'],
             q=build_search_query(req_param['search']),
         )
