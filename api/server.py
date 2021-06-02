@@ -111,9 +111,12 @@ class UsersResource():
             resp.media = {'reason': str(e)}
             return
 
+        # Limit minimum page to 0
+        page_for_auth0 = max(0, req_param['page'] - 1)
+
         auth0 = get_auth0_client()
         auth0_response = auth0.users.list(
-            page=req_param['page'],
+            page=page_for_auth0,
             per_page=req_param['per_page'],
             q=build_search_query(req_param['search']),
         )
@@ -269,7 +272,8 @@ class RolesResource():
         # Get roles
         roles = RoleModel.all()
         if req_param['per_page'] > 0:
-            roles = roles.offset(req_param['per_page'] * req_param['page']).limit(req_param['per_page'])
+            offset: int = req_param['per_page'] * (req_param['page'] - 1)
+            roles = roles.offset(offset).limit(req_param['per_page'])
         if req_param['search']:
             roles = roles.filter(
                 Q(name__contains=req_param['search']) | Q(description__contains=req_param['search'])

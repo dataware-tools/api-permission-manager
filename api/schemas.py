@@ -6,7 +6,10 @@ from api import settings
 class BasePaginationInputSchema(Schema):
     '''Base schema of pagination input.'''
     per_page = fields.Int(missing=settings.PAGINATION['DEFAULT_PER_PAGE'])
-    page = fields.Int(missing=0)
+    page = fields.Int(
+        missing=1,
+        validate=validate.Range(min=1),
+    )
     search = fields.Str(missing='')
 
 
