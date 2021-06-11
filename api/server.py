@@ -474,8 +474,13 @@ class IsPermittedResource:
         if 'user_id' in req_param:
             user_id: str = req_param['user_id']
         else:
-            jwt_payload = get_jwt_payload_from_request(req)
-            user_id: str = jwt_payload['jwt_payload']['sub']
+            try:
+                jwt_payload = get_jwt_payload_from_request(req)
+                user_id: str = jwt_payload['jwt_payload']['sub']
+            except Exception:
+                resp.status_code = 403
+                resp.media = {'reason': 'Invalid signature'}
+                return
 
         # Get whether permitted
         is_permitted = await is_user_permitted_action(
