@@ -26,7 +26,7 @@ from api.schemas import (
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
-    IsPermittedResourceOnGetInputSchema,
+    IsPermittedActionResourceOnGetInputSchema,
 )
 from api.settings import ActionType
 from api.utils import (
@@ -453,21 +453,33 @@ class ActionResource:
         resp.media = result
 
 
-@api.route('/is_permitted')
-class IsPermittedResource:
-    async def on_get(self, req: responder.Request, resp: responder.Response):
+# TODO: Add returning permitted list of actions
+
+
+@api.route('/is_permitted/{action_id}')
+class IsPermittedActionResource:
+    async def on_get(self, req: responder.Request, resp: responder.Response, action_id: str):
         """Check if the user's permitted to act to a database.
 
         Args:
             req (responder.Request): Request
             resp (responder.Response): Response
+            action_id (str): Action id
 
         """
         try:
-            req_param = IsPermittedResourceOnGetInputSchema().load(req.params)
+            req_param = IsPermittedActionResourceOnGetInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
+            return
+
+        # Validate action_id
+        try:
+            action_data = ActionType[action_id]
+        except KeyError:
+            resp.status_code = 404
+            resp.media = {'reason': f'Action {action_id} does not exist.'}
             return
 
         # Get user id if not specified
@@ -485,7 +497,7 @@ class IsPermittedResource:
         # Get whether permitted
         is_permitted = await is_user_permitted_action(
             user_id,
-            ActionType[req_param['action_id']],
+            action_data,
             req_param['database_id'],
         )
 
