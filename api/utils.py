@@ -80,6 +80,7 @@ async def is_user_permitted_action(user_id: str, action: ActionType, database_id
     if not roles:
         return False
 
+    # TODO: Make it faster by memo
     for role in roles:
         for permission in role.permissions:
             database_patterns = permission['databases']

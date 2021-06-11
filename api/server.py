@@ -26,11 +26,13 @@ from api.schemas import (
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
+    IsPermittedResourceOnGetInputSchema,
 )
 from api.settings import ActionType
 from api.utils import (
     get_auth0_client,
     build_search_query,
+    is_user_permitted_action,
 )
 
 # Metadata
@@ -449,6 +451,40 @@ class ActionResource:
 
         result = action_schema.dump(action_data)
         resp.media = result
+
+
+@api.route('/is_permitted')
+class IsPermittedResource:
+    async def on_get(self, req: responder.Request, resp: responder.Response):
+        """Check if the user's permitted to act to a database.
+
+        Args:
+            req (responder.Request): Request
+            resp (responder.Response): Response
+
+        """
+        try:
+            req_param = IsPermittedResourceOnGetInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get user id if not specified
+        if 'user_id' in req_param:
+            user_id: str = req_param['user_id']
+        else:
+            jwt_payload = get_jwt_payload_from_request(req)
+            user_id: str = jwt_payload['jwt_payload']['sub']
+
+        # Get whether permitted
+        is_permitted = await is_user_permitted_action(
+            user_id,
+            ActionType[req_param['action_id']],
+            req_param['database_id'],
+        )
+
+        resp.media = is_permitted
 
 
 @api.route('/healthz')
