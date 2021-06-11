@@ -81,3 +81,12 @@ class UsersResourceInputSchema(BasePaginationInputSchema):
 
 class UserResourceOnPatchInputSchema(Schema):
     role_ids = fields.List(fields.Int())
+
+
+class IsPermittedResourceOnGetInputSchema(Schema):
+    action_id = fields.Str(
+        required=True,
+        validate=validate.OneOf(settings.ActionType.keys()),
+    )
+    database_id = fields.Str(required=True)
+    user_id = fields.Str()
