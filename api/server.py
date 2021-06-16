@@ -32,8 +32,6 @@ from api.settings import ActionType
 from api.utils import (
     get_auth0_client,
     build_search_query,
-    is_user_permitted_action,
-    get_user_permitted_actions,
 )
 
 # Metadata
@@ -485,11 +483,8 @@ class PermittedActionsResource:
                 resp.media = {'reason': 'Invalid signature'}
                 return
 
-        # Get whether permitted
-        permitted_actions = await get_user_permitted_actions(
-            user_id,
-            req_param['database_id'],
-        )
+        user = await UserModel.get(id=user_id)
+        permitted_actions = await user.get_permitted_actions(req_param['database_id'])
 
         resp.media = [action.name for action in permitted_actions]
 
@@ -533,8 +528,8 @@ class PermittedActionResource:
                 return
 
         # Get whether permitted
-        is_permitted = await is_user_permitted_action(
-            user_id,
+        user = await UserModel.get(id=user_id)
+        is_permitted = await user.is_user_permitted_action(
             action_data,
             req_param['database_id'],
         )

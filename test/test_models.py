@@ -7,6 +7,35 @@ from api.models import (
     UserModel,
     RoleModel,
 )
+from api.settings import ActionType
+
+
+@pytest.fixture()
+async def setup_db_for_test_permission_check():
+    user_id: str = 'test_user_id'
+    from api.models import RoleModel
+    role1 = await RoleModel.create(
+        name='role1',
+        permissions=[{
+            'databases': ['database1'],
+            'action_ids': [ActionType.read_all.name, ActionType.write.name],
+        }]
+    )
+    role2 = await RoleModel.create(
+        name='role2',
+        permissions=[{
+            'databases': ['testpostfix*', '*testprefix', 'test?single'],
+            'action_ids': [ActionType.read_only_public.name],
+        }]
+    )
+    from api.models import UserModel
+    user = await UserModel.create(
+        id=user_id,
+    )
+    await user.roles.add(role1, role2)
+    return {
+        'user_id': user_id,
+    }
 
 
 class TestUserModel(test.TestCase):
@@ -35,6 +64,50 @@ class TestUserModel(test.TestCase):
         await user.roles.add(role1, role2)
         roles = await user.roles.all()
         assert len(roles) == 2
+
+
+@pytest.mark.asyncio
+async def test_is_user_permitted_action(setup_db_for_test_permission_check):
+    user = await UserModel.get(id=setup_db_for_test_permission_check['user_id'])
+    assert await user.is_user_permitted_action(
+        ActionType.read_only_public,
+        'testpostfix123123',
+    ) is True
+
+    assert await user.is_user_permitted_action(
+        ActionType.read_only_public,
+        '123123testprefix',
+    ) is True
+
+    assert await user.is_user_permitted_action(
+        ActionType.read_only_public,
+        'test1single',
+    ) is True
+
+    assert await user.is_user_permitted_action(
+        ActionType.read_only_public,
+        'testsingle',
+    ) is False
+
+    assert await user.is_user_permitted_action(
+        ActionType.read_only_public,
+        'should_be_false_database',
+    ) is False
+
+    assert await user.is_user_permitted_action(
+        ActionType.read_only_public,
+        'database1',
+    ) is False
+
+    assert await user.is_user_permitted_action(
+        ActionType.read_all,
+        'database1',
+    ) is True
+
+    assert await user.is_user_permitted_action(
+        ActionType.write,
+        'database1',
+    ) is True
 
 
 class TestRoleModel(test.TestCase):
