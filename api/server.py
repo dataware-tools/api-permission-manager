@@ -26,7 +26,7 @@ from api.schemas import (
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
-    IsPermittedActionResourceOnGetInputSchema,
+    PermittedActionsResourceOnGetInputSchema,
 )
 from api.settings import ActionType
 from api.utils import (
@@ -456,8 +456,8 @@ class ActionResource:
 # TODO: Add returning permitted list of actions
 
 
-@api.route('/is_permitted/{action_id}')
-class IsPermittedActionResource:
+@api.route('/permitted-actions/{action_id}')
+class PermittedActionResource:
     async def on_get(self, req: responder.Request, resp: responder.Response, action_id: str):
         """Check if the user's permitted to act to a database.
 
@@ -468,7 +468,7 @@ class IsPermittedActionResource:
 
         """
         try:
-            req_param = IsPermittedActionResourceOnGetInputSchema().load(req.params)
+            req_param = PermittedActionsResourceOnGetInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}

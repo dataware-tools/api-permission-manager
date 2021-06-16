@@ -83,6 +83,6 @@ class UserResourceOnPatchInputSchema(Schema):
     role_ids = fields.List(fields.Int())
 
 
-class IsPermittedActionResourceOnGetInputSchema(Schema):
+class PermittedActionsResourceOnGetInputSchema(Schema):
     database_id = fields.Str(required=True)
     user_id = fields.Str()

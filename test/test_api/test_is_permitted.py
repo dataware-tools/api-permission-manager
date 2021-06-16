@@ -7,7 +7,7 @@ from api.settings import ActionType
 def test_is_permitted_200(setup_testdb, api):
     r = api.requests.get(
         url=api.url_for(
-            server.IsPermittedActionResource,
+            server.PermittedActionResource,
             action_id=ActionType.read_all.name,
         ),
         params={
@@ -21,7 +21,7 @@ def test_is_permitted_200(setup_testdb, api):
 
     r = api.requests.get(
         url=api.url_for(
-            server.IsPermittedActionResource,
+            server.PermittedActionResource,
             action_id=ActionType.read_all.name,
         ),
         params={
@@ -37,7 +37,7 @@ def test_is_permitted_200(setup_testdb, api):
 def test_is_permitted_no_database_id_400(setup_testdb, api):
     r = api.requests.get(
         url=api.url_for(
-            server.IsPermittedActionResource,
+            server.PermittedActionResource,
             action_id=ActionType.read_all.name,
         ),
         params={
@@ -50,7 +50,7 @@ def test_is_permitted_no_database_id_400(setup_testdb, api):
 def test_is_permitted_invalid_token_403(api):
     r = api.requests.get(
         url=api.url_for(
-            server.IsPermittedActionResource,
+            server.PermittedActionResource,
             action_id=ActionType.read_all.name,
         ),
         params={
