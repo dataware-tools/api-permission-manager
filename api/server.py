@@ -33,6 +33,7 @@ from api.utils import (
     get_auth0_client,
     build_search_query,
     is_user_permitted_action,
+    get_user_permitted_actions,
 )
 
 # Metadata
@@ -453,7 +454,44 @@ class ActionResource:
         resp.media = result
 
 
-# TODO: Add returning permitted list of actions
+@api.route('/permitted-actions')
+class PermittedActionsResource:
+    async def on_get(self, req: responder.Request, resp: responder.Response):
+        """Check if the user's permitted to act to a database.
+
+        Args:
+            req (responder.Request): Request
+            resp (responder.Response): Response
+
+        """
+        try:
+            req_param = PermittedActionsResourceOnGetInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # TODO: Refactor repetitive code below
+
+        # Get user id if not specified
+        if 'user_id' in req_param:
+            user_id: str = req_param['user_id']
+        else:
+            try:
+                jwt_payload = get_jwt_payload_from_request(req)
+                user_id: str = jwt_payload['jwt_payload']['sub']
+            except Exception:
+                resp.status_code = 403
+                resp.media = {'reason': 'Invalid signature'}
+                return
+
+        # Get whether permitted
+        permitted_actions = await get_user_permitted_actions(
+            user_id,
+            req_param['database_id'],
+        )
+
+        resp.media = [action.name for action in permitted_actions]
 
 
 @api.route('/permitted-actions/{action_id}')

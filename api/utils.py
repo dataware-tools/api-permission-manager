@@ -1,11 +1,11 @@
 import fnmatch
 import os
-from typing import List
+from typing import Dict, List
 
 from auth0.v3.authentication import GetToken
 from auth0.v3.management import Auth0
 
-from api.models import UserModel
+from api.models import RoleModel, UserModel
 from api.settings import ActionType
 
 
@@ -59,6 +59,47 @@ def match_exist_in_databases(database_id_to_check: str, database_patterns: List[
     return False
 
 
+async def get_user_roles(user_id: str):
+    """Returns roles that the user has.
+
+    Args:
+        user_id (str)
+
+    Returns:
+        roles (List[RoleModel])
+
+    """
+    user = await UserModel.get(id=user_id)
+    await user.fetch_related('roles')
+    roles = user.roles
+    return roles
+
+
+async def get_user_permitted_actions(user_id: str, database_id: str) -> List[ActionType]:
+    """Returns permitted actions for the user on the database."""
+    # Get roles for user
+    roles = await get_user_roles(user_id)
+
+    # Return empty list if no roles
+    if not roles:
+        return []
+
+    # TODO: Make it faster by memo
+    permitted_actions: Dict[ActionType] = {}
+    for role in roles:
+        for permission in role.permissions:
+            database_patterns = permission['databases']
+            # Check if there's match in database patterns
+            database_match: bool = match_exist_in_databases(database_id, database_patterns)
+            if not database_match:
+                continue
+            # Add action to permitted_actions
+            for action in permission['action_ids']:
+                permitted_actions[ActionType[action]] = True
+
+    return permitted_actions.keys()
+
+
 async def is_user_permitted_action(user_id: str, action: ActionType, database_id: str) -> bool:
     """Returns if the user has permission for the action on the database.
 
@@ -72,9 +113,7 @@ async def is_user_permitted_action(user_id: str, action: ActionType, database_id
 
     """
     # Get roles for user
-    user = await UserModel.get(id=user_id)
-    await user.fetch_related('roles')
-    roles = user.roles
+    roles = await get_user_roles(user_id)
 
     # Return false if no roles
     if not roles:
