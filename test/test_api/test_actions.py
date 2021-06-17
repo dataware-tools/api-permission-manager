@@ -13,7 +13,7 @@ class TestActionsResource:
 
 class TestActionResource:
     def test_get_action_200(self, api):
-        r = api.requests.get(url=api.url_for(server.ActionResource, action_id='write'))
+        r = api.requests.get(url=api.url_for(server.ActionResource, action_id='add_records'))
         assert r.status_code == 200
         data = json.loads(r.text)
         assert 'action_id' in data.keys()

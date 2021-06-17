@@ -44,14 +44,22 @@ async def setup_db_for_test_permission_check():
         name='role1',
         permissions=[{
             'databases': ['database1'],
-            'action_ids': [ActionType.read_all.name, ActionType.write.name],
+            'action_ids': [
+                ActionType.read_records.name,
+                ActionType.add_records.name,
+                ActionType.update_records.name,
+                ActionType.delete_records.name,
+                ActionType.read_private_keys.name,
+            ],
         }]
     )
     role2 = await RoleModel.create(
         name='role2',
         permissions=[{
             'databases': ['testpostfix*', '*testprefix', 'test?single'],
-            'action_ids': [ActionType.read_only_public.name],
+            'action_ids': [
+                ActionType.read_records.name,
+            ],
         }]
     )
     from api.models import UserModel
@@ -68,48 +76,48 @@ async def setup_db_for_test_permission_check():
 async def test_is_user_permitted_action(setup_db_for_test_permission_check):
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_only_public,
+        ActionType.read_records,
         'testpostfix123123',
     ) is True
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_only_public,
+        ActionType.read_records,
         '123123testprefix',
     ) is True
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_only_public,
+        ActionType.read_records,
         'test1single',
     ) is True
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_only_public,
+        ActionType.read_records,
         'testsingle',
     ) is False
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_only_public,
+        ActionType.read_records,
         'should_be_false_database',
     ) is False
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_only_public,
-        'database1',
+        ActionType.read_private_keys,
+        'testpostfix123123',
     ) is False
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.read_all,
+        ActionType.read_private_keys,
         'database1',
     ) is True
 
     assert await is_user_permitted_action(
         setup_db_for_test_permission_check['user_id'],
-        ActionType.write,
+        ActionType.add_records,
         'database1',
     ) is True
