@@ -26,13 +26,12 @@ from api.schemas import (
     UserSchema,
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
-    IsPermittedResourceOnGetInputSchema,
+    PermittedActionsResourceOnGetInputSchema,
 )
 from api.settings import ActionType
 from api.utils import (
     get_auth0_client,
     build_search_query,
-    is_user_permitted_action,
 )
 
 # Metadata
@@ -453,8 +452,8 @@ class ActionResource:
         resp.media = result
 
 
-@api.route('/is_permitted')
-class IsPermittedResource:
+@api.route('/permitted-actions')
+class PermittedActionsResource:
     async def on_get(self, req: responder.Request, resp: responder.Response):
         """Check if the user's permitted to act to a database.
 
@@ -464,10 +463,56 @@ class IsPermittedResource:
 
         """
         try:
-            req_param = IsPermittedResourceOnGetInputSchema().load(req.params)
+            req_param = PermittedActionsResourceOnGetInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
+            return
+
+        # TODO: Refactor repetitive code below
+
+        # Get user id if not specified
+        if 'user_id' in req_param:
+            user_id: str = req_param['user_id']
+        else:
+            try:
+                jwt_payload = get_jwt_payload_from_request(req)
+                user_id: str = jwt_payload['jwt_payload']['sub']
+            except Exception:
+                resp.status_code = 403
+                resp.media = {'reason': 'Invalid signature'}
+                return
+
+        user = await UserModel.get(id=user_id)
+        permitted_actions = await user.get_permitted_actions(req_param['database_id'])
+
+        resp.media = [action.name for action in permitted_actions]
+
+
+@api.route('/permitted-actions/{action_id}')
+class PermittedActionResource:
+    async def on_get(self, req: responder.Request, resp: responder.Response, action_id: str):
+        """Check if the user's permitted to act to a database.
+
+        Args:
+            req (responder.Request): Request
+            resp (responder.Response): Response
+            action_id (str): Action id
+
+        """
+        try:
+            req_param = PermittedActionsResourceOnGetInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Validate action_id
+        try:
+            action_data = ActionType[action_id]
+        except KeyError:
+            resp.status_code = 404
+            resp.media = {'reason': f'Action {action_id} does not exist.'}
             return
 
         # Get user id if not specified
@@ -483,9 +528,9 @@ class IsPermittedResource:
                 return
 
         # Get whether permitted
-        is_permitted = await is_user_permitted_action(
-            user_id,
-            ActionType[req_param['action_id']],
+        user = await UserModel.get(id=user_id)
+        is_permitted = await user.is_user_permitted_action(
+            action_data,
             req_param['database_id'],
         )
 
