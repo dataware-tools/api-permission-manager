@@ -20,9 +20,20 @@ TORTOISE_ORM = {
 
 class ActionType(Enum):
     """List of actions."""
-    read_only_public = 'Read only public'
-    read_all = 'Read all'
-    write = 'Write'
+    # Database-related actions
+    read_databases = 'Read databases'           # Read databases
+    add_databases = 'Add databases'             # Add new databases
+    update_databases = 'Update databases'       # Update metadata of databases
+    delete_databases = 'Delete databases'       # Delete databases
+
+    # Metadata-related actions
+    read_metadata = 'Read metadata'               # Read metadata
+    add_metadata = 'Write metadata'               # Add new metadata
+    update_metadata = 'Update metadata'           # Update metadata of metadata
+    delete_metadata = 'Delete metadata'           # Delete metadata
+
+    # Metadata-related actions
+    read_private_keys = 'Read private keys in metadata'     # Read private keys
 
     def describe(self) -> Dict[str, str]:
         """Returns action as a dict object.
