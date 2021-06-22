@@ -45,11 +45,7 @@ async def setup_testdb(auth0_existing_userid):
         permissions=[{
             'databases': ['database1', 'database2'],
             'action_ids': [
-                ActionType.read_metadata.name,
-                ActionType.add_metadata.name,
-                ActionType.update_metadata.name,
-                ActionType.delete_metadata.name,
-                ActionType.read_private_keys.name,
+                getattr(ActionType, 'metadata').name,
             ],
         }]
     )
@@ -58,10 +54,8 @@ async def setup_testdb(auth0_existing_userid):
         permissions=[{
             'databases': ['database1', 'database2'],
             'action_ids': [
-                ActionType.read_metadata.name,
-                ActionType.add_metadata.name,
-                ActionType.update_metadata.name,
-                ActionType.delete_metadata.name,
+                getattr(ActionType, 'metadata:read:public').name,
+                getattr(ActionType, 'metadata:write').name,
             ],
         }]
     )
@@ -70,7 +64,7 @@ async def setup_testdb(auth0_existing_userid):
         permissions=[{
             'databases': ['database1', 'database2'],
             'action_ids': [
-                ActionType.read_metadata.name,
+                getattr(ActionType, 'metadata:read').name,
             ],
         }]
     )

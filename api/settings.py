@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, EnumMeta
 from typing import Dict, List
 
 PAGINATION = {
@@ -18,22 +18,34 @@ TORTOISE_ORM = {
 }
 
 
-class ActionType(Enum):
+class ActionTypeMeta(EnumMeta):
+    """Metaclass of ActionType."""
+
+    def __new__(mcs, cls, bases, classdict):
+        """Set actions."""
+
+        # Database-related actions
+        classdict['databases'] = 'Admin databases'
+        classdict['databases:read'] = 'Read databases'
+        classdict['databases:write'] = 'Write databases'
+        classdict['databases:write:add'] = 'Add databases'
+        classdict['databases:write:update'] = 'Update databases'
+        classdict['databases:write:delete'] = 'Delete databases'
+
+        # Metadata-related actions
+        classdict['metadata'] = 'Admin metadata'
+        classdict['metadata:read'] = 'Read metadata'
+        classdict['metadata:read:public'] = 'Read public metadata'
+        classdict['metadata:write'] = 'Write metadata'
+        classdict['metadata:write:add'] = 'Add metadata'
+        classdict['metadata:write:update'] = 'Update metadata'
+        classdict['metadata:write:delete'] = 'Delete metadata'
+
+        return super().__new__(mcs, cls, bases, classdict)
+
+
+class ActionType(Enum, metaclass=ActionTypeMeta):
     """List of actions."""
-    # Database-related actions
-    read_databases = 'Read databases'           # Read databases
-    add_databases = 'Add databases'             # Add new databases
-    update_databases = 'Update databases'       # Update metadata of databases
-    delete_databases = 'Delete databases'       # Delete databases
-
-    # Metadata-related actions
-    read_metadata = 'Read metadata'               # Read metadata
-    add_metadata = 'Write metadata'               # Add new metadata
-    update_metadata = 'Update metadata'           # Update metadata of metadata
-    delete_metadata = 'Delete metadata'           # Delete metadata
-
-    # Metadata-related actions
-    read_private_keys = 'Read private keys in metadata'     # Read private keys
 
     def describe(self) -> Dict[str, str]:
         """Returns action as a dict object.

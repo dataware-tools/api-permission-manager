@@ -17,11 +17,10 @@ def test_get_permitted_actions(setup_testdb, api):
     assert r.status_code == 200
     data = json.loads(r.text)
     diff = set(data) ^ {
-        ActionType.read_metadata.name,
-        ActionType.add_metadata.name,
-        ActionType.update_metadata.name,
-        ActionType.delete_metadata.name,
-        ActionType.read_private_keys.name,
+        getattr(ActionType, 'metadata').name,
+        getattr(ActionType, 'metadata:read').name,
+        getattr(ActionType, 'metadata:read:public').name,
+        getattr(ActionType, 'metadata:write').name,
     }
     assert not diff
 
@@ -45,7 +44,7 @@ def test_permitted_actions_no_database_id_400(setup_testdb, api):
     r = api.requests.get(
         url=api.url_for(
             server.PermittedActionsResource,
-            action_id=ActionType.read_metadata.name,
+            action_id=getattr(ActionType, 'metadata:read').name,
         ),
         params={
             'user_id': setup_testdb['existing_user_id'],
@@ -58,7 +57,7 @@ def test_permitted_actions_invalid_token_403(api):
     r = api.requests.get(
         url=api.url_for(
             server.PermittedActionsResource,
-            action_id=ActionType.read_metadata.name,
+            action_id=getattr(ActionType, 'metadata:read').name,
         ),
         params={
             'database_id': 'database1',
@@ -72,7 +71,7 @@ def test_is_permitted_200(setup_testdb, api):
     r = api.requests.get(
         url=api.url_for(
             server.PermittedActionResource,
-            action_id=ActionType.read_metadata.name,
+            action_id=getattr(ActionType, 'metadata:read').name,
         ),
         params={
             'database_id': 'database1',
@@ -86,7 +85,7 @@ def test_is_permitted_200(setup_testdb, api):
     r = api.requests.get(
         url=api.url_for(
             server.PermittedActionResource,
-            action_id=ActionType.read_metadata.name,
+            action_id=getattr(ActionType, 'metadata:read').name,
         ),
         params={
             'database_id': 'database10',
@@ -102,7 +101,7 @@ def test_is_permitted_no_database_id_400(setup_testdb, api):
     r = api.requests.get(
         url=api.url_for(
             server.PermittedActionResource,
-            action_id=ActionType.read_metadata.name,
+            action_id=getattr(ActionType, 'metadata:read').name,
         ),
         params={
             'user_id': setup_testdb['existing_user_id'],
@@ -115,7 +114,7 @@ def test_is_permitted_invalid_token_403(api):
     r = api.requests.get(
         url=api.url_for(
             server.PermittedActionResource,
-            action_id=ActionType.read_metadata.name,
+            action_id=getattr(ActionType, 'metadata:read').name,
         ),
         params={
             'database_id': 'database1',

@@ -19,11 +19,7 @@ async def setup_db_for_test_permission_check():
         permissions=[{
             'databases': ['database1'],
             'action_ids': [
-                ActionType.read_metadata.name,
-                ActionType.add_metadata.name,
-                ActionType.update_metadata.name,
-                ActionType.delete_metadata.name,
-                ActionType.read_private_keys.name,
+                getattr(ActionType, 'metadata').name,
             ],
         }]
     )
@@ -32,10 +28,8 @@ async def setup_db_for_test_permission_check():
         permissions=[{
             'databases': ['testpostfix*', '*testprefix', 'test?single'],
             'action_ids': [
-                ActionType.read_metadata.name,
-                ActionType.add_metadata.name,
-                ActionType.update_metadata.name,
-                ActionType.delete_metadata.name,
+                getattr(ActionType, 'metadata:write').name,
+                getattr(ActionType, 'metadata:read:public').name,
             ],
         }]
     )
@@ -81,42 +75,42 @@ class TestUserModel(test.TestCase):
 async def test_is_user_permitted_action(setup_db_for_test_permission_check):
     user = await UserModel.get(id=setup_db_for_test_permission_check['user_id'])
     assert await user.is_user_permitted_action(
-        ActionType.read_metadata,
+        getattr(ActionType, 'metadata:read:public'),
         'testpostfix123123',
     ) is True
 
     assert await user.is_user_permitted_action(
-        ActionType.read_metadata,
+        getattr(ActionType, 'metadata:read:public'),
         '123123testprefix',
     ) is True
 
     assert await user.is_user_permitted_action(
-        ActionType.read_metadata,
+        getattr(ActionType, 'metadata:read:public'),
         'test1single',
     ) is True
 
     assert await user.is_user_permitted_action(
-        ActionType.read_metadata,
+        getattr(ActionType, 'metadata:read:public'),
         'testsingle',
     ) is False
 
     assert await user.is_user_permitted_action(
-        ActionType.read_metadata,
+        getattr(ActionType, 'metadata:read:public'),
         'should_be_false_database',
     ) is False
 
     assert await user.is_user_permitted_action(
-        ActionType.read_private_keys,
+        getattr(ActionType, 'metadata:read'),
         'testpostfix123123',
     ) is False
 
     assert await user.is_user_permitted_action(
-        ActionType.read_private_keys,
+        getattr(ActionType, 'metadata:read'),
         'database1',
     ) is True
 
     assert await user.is_user_permitted_action(
-        ActionType.add_metadata,
+        getattr(ActionType, 'metadata:write:add'),
         'database1',
     ) is True
 

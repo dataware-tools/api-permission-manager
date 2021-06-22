@@ -55,7 +55,6 @@ class UserModel(Model):
         """Returns if the user has permission for the action on the database.
 
         Args:
-            user_id (str)
             action (ActionType)
             database_id (str)
 
@@ -63,25 +62,13 @@ class UserModel(Model):
             (bool)
 
         """
-        # Get roles for user
-        await self.fetch_related('roles')
-        roles = self.roles
+        # Get permitted-actions
+        permitted_actions = await self.get_permitted_actions(database_id)
 
-        # Return false if no roles
-        if not roles:
-            return False
-
-        # TODO: Make it faster by memo
-        for role in roles:
-            for permission in role.permissions:
-                database_patterns = permission['databases']
-                # Check if there's match in database patterns
-                database_match: bool = match_exist_in_databases(database_id, database_patterns)
-                if not database_match:
-                    continue
-                # Check if action_ids contains specified action
-                if action.name in permission['action_ids']:
-                    return True
+        # Look over the permitted-actions
+        for permitted_action in permitted_actions:
+            if action.name.startswith(permitted_action.name):
+                return True
 
         return False
 
