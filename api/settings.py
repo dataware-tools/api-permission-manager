@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, EnumMeta
 from typing import Dict, List
 
 PAGINATION = {
@@ -18,11 +18,34 @@ TORTOISE_ORM = {
 }
 
 
-class ActionType(Enum):
+class ActionTypeMeta(EnumMeta):
+    """Metaclass of ActionType."""
+
+    def __new__(mcs, cls, bases, classdict):
+        """Set actions."""
+
+        # Database-related actions
+        classdict['databases'] = 'Admin databases'
+        classdict['databases:read'] = 'Read databases'
+        classdict['databases:write'] = 'Write databases'
+        classdict['databases:write:add'] = 'Add databases'
+        classdict['databases:write:update'] = 'Update databases'
+        classdict['databases:write:delete'] = 'Delete databases'
+
+        # Metadata-related actions
+        classdict['metadata'] = 'Admin metadata'
+        classdict['metadata:read'] = 'Read metadata'
+        classdict['metadata:read:public'] = 'Read public metadata'
+        classdict['metadata:write'] = 'Write metadata'
+        classdict['metadata:write:add'] = 'Add metadata'
+        classdict['metadata:write:update'] = 'Update metadata'
+        classdict['metadata:write:delete'] = 'Delete metadata'
+
+        return super().__new__(mcs, cls, bases, classdict)
+
+
+class ActionType(Enum, metaclass=ActionTypeMeta):
     """List of actions."""
-    read_only_public = 'Read only public'
-    read_all = 'Read all'
-    write = 'Write'
 
     def describe(self) -> Dict[str, str]:
         """Returns action as a dict object.

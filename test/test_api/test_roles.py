@@ -140,7 +140,10 @@ class TestRolesResource:
                 'permissions': [
                     {
                         'databases': ['database1', 'database2'],
-                        'action_ids': [ActionType.read_all.name, ActionType.write.name],
+                        'action_ids': [
+                            getattr(ActionType, 'metadata:read').name,
+                            getattr(ActionType, 'metadata:write').name,
+                        ],
                     },
                 ],
             },
@@ -248,7 +251,9 @@ class TestRoleResource:
                 'permissions': [
                     {
                         'databases': ['database1', 'database2'],
-                        'action_ids': [ActionType.read_all.name],
+                        'action_ids': [
+                            getattr(ActionType, 'metadata:read').name
+                        ],
                     },
                 ],
             },
