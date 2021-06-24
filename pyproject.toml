@@ -26,7 +26,7 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
-dataware-tools-api-helper = { git = "https://github.com/dataware-tools/api-helper-python.git", branch = "master" }
+dataware-tools-api-helper = { git = "https://github.com/dataware-tools/api-helper-python.git", tag = "v0.1.0" }
 responder = "^2.0.5"
 auth0-python = "^3.14.0"
 marshmallow = "^3.10.0"
