@@ -477,7 +477,7 @@ class PermittedActionsResource:
         else:
             try:
                 jwt_payload = get_jwt_payload_from_request(req)
-                user_id: str = jwt_payload['jwt_payload']['sub']
+                user_id: str = jwt_payload['sub']
             except Exception:
                 resp.status_code = 403
                 resp.media = {'reason': 'Invalid signature'}
@@ -521,7 +521,7 @@ class PermittedActionResource:
         else:
             try:
                 jwt_payload = get_jwt_payload_from_request(req)
-                user_id: str = jwt_payload['jwt_payload']['sub']
+                user_id: str = jwt_payload['sub']
             except Exception:
                 resp.status_code = 403
                 resp.media = {'reason': 'Invalid signature'}
