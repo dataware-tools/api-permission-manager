@@ -483,8 +483,11 @@ class PermittedActionsResource:
                 resp.media = {'reason': 'Invalid signature'}
                 return
 
-        user = await UserModel.get(id=user_id)
-        permitted_actions = await user.get_permitted_actions(req_param['database_id'])
+        user = await UserModel.get_or_none(id=user_id)
+        if user:
+            permitted_actions = await user.get_permitted_actions(req_param['database_id'])
+        else:
+            permitted_actions = []
 
         resp.media = [action.name for action in permitted_actions]
 
@@ -528,11 +531,14 @@ class PermittedActionResource:
                 return
 
         # Get whether permitted
-        user = await UserModel.get(id=user_id)
-        is_permitted = await user.is_user_permitted_action(
-            action_data,
-            req_param['database_id'],
-        )
+        user = await UserModel.get_or_none(id=user_id)
+        if user:
+            is_permitted = await user.is_user_permitted_action(
+                action_data,
+                req_param['database_id'],
+            )
+        else:
+            is_permitted = False
 
         resp.media = is_permitted
 
