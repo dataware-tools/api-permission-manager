@@ -1,4 +1,5 @@
 from enum import Enum, EnumMeta
+import os
 from typing import Dict, List
 
 PAGINATION = {
@@ -7,7 +8,7 @@ PAGINATION = {
 
 TORTOISE_ORM = {
     'connections': {
-        'default': 'sqlite://db.sqlite3'
+        'default': os.environ.get('DB_URL', 'sqlite://db.sqlite3')
     },
     'apps': {
         'models': {
