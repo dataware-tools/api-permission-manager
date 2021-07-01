@@ -46,3 +46,10 @@ $ docker-compose exec api aerich upgrade
 ```
 
 However, aerich does no support many of database editing commands (e.g. drop table) for SQLite. Use PostgreSQL, MySQL, etc. for enable migration using aerich.
+
+
+## Environment Variables
+
+- `API_DEBUG`: Enable debug mode if true.
+- `DB_URL`: URL for database. If not set, "sqlite://db.sqlite3" will be used.
+- `SECRET_KEY`: Secret key for the app.
