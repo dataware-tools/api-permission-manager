@@ -27,6 +27,7 @@ from api.schemas import (
     UsersResourceInputSchema,
     UserResourceOnPatchInputSchema,
     PermittedActionsResourceOnGetInputSchema,
+    PermittedDatabasesResourceOnGetInputSchema,
 )
 from api.settings import ActionType
 from api.utils import (
@@ -541,6 +542,55 @@ class PermittedActionResource:
             is_permitted = False
 
         resp.media = is_permitted
+
+
+@api.route('/permitted-databases')
+class PermittedDatabasesResource():
+    async def on_get(self, req: responder.Request, resp: responder.Response):
+        """Filter permitted databases.
+
+        Args:
+            req (responder.Request): Request
+            resp (responder.Response): Response
+
+        """
+        # Validate request parameters
+        try:
+            req_param = PermittedDatabasesResourceOnGetInputSchema().load(req.params)
+        except ValidationError as e:
+            resp.status_code = 400
+            resp.media = {'reason': str(e)}
+            return
+
+        # Get user id if not specified
+        if 'user_id' in req_param:
+            user_id: str = req_param['user_id']
+        else:
+            try:
+                jwt_payload = get_jwt_payload_from_request(req)
+                user_id: str = jwt_payload['sub']
+            except Exception:
+                resp.status_code = 403
+                resp.media = {'reason': 'Invalid signature'}
+                return
+
+        # Filter permitted databases
+        user = await UserModel.get_or_none(id=user_id)
+        if user:
+            permitted_database_ids = await user.filter_permitted_databases(
+                ActionType['databases:read'],
+                req_param['database_ids'],
+            )
+        else:
+            permitted_database_ids = []
+
+        # Serialize role objects
+        output_schema = PermittedDatabasesResourceOnGetInputSchema(only=('database_ids',))
+        serialized_output = output_schema.dump({
+            'database_ids': permitted_database_ids,
+        })
+
+        resp.media = serialized_output
 
 
 @api.route('/healthz')
