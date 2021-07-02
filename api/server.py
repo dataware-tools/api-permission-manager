@@ -556,7 +556,8 @@ class PermittedDatabasesResource():
         """
         # Validate request parameters
         try:
-            req_param = PermittedDatabasesResourceOnGetInputSchema().load(req.params)
+            req_json = await req.media()
+            req_param = PermittedDatabasesResourceOnGetInputSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
             resp.media = {'reason': str(e)}
@@ -578,7 +579,7 @@ class PermittedDatabasesResource():
         user = await UserModel.get_or_none(id=user_id)
         if user:
             permitted_database_ids = await user.filter_permitted_databases(
-                ActionType['databases:read'],
+                getattr(ActionType, 'databases:read'),
                 req_param['database_ids'],
             )
         else:
