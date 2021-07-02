@@ -72,6 +72,18 @@ class UserModel(Model):
 
         return False
 
+    async def filter_permitted_databases(self, action: ActionType, database_ids: List[str]) -> List[str]:
+        """Returns permitted database ids from input list.
+
+        Args:
+            database_ids (List[str])
+
+        Returns:
+            (List[str])
+
+        """
+        return [database_id for database_id in database_ids if await self.is_user_permitted_action(action, database_id)]
+
 
 class RoleModel(Model):
     id = fields.IntField(pk=True)
