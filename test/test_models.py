@@ -30,6 +30,7 @@ async def setup_db_for_test_permission_check():
             'action_ids': [
                 getattr(ActionType, 'metadata:write').name,
                 getattr(ActionType, 'metadata:read:public').name,
+                getattr(ActionType, 'databases:read').name,
             ],
         }]
     )
@@ -113,6 +114,21 @@ async def test_is_user_permitted_action(setup_db_for_test_permission_check):
         getattr(ActionType, 'metadata:write:add'),
         'database1',
     ) is True
+
+
+@pytest.mark.asyncio
+async def test_filter_permitted_databases(setup_db_for_test_permission_check):
+    user = await UserModel.get(id=setup_db_for_test_permission_check['user_id'])
+
+    assert await user.filter_permitted_databases(
+        getattr(ActionType, 'databases:read'),
+        ['testpostfix123123', '123123testprefix', 'not_permitted_database'],
+    ) == ['testpostfix123123', '123123testprefix']
+
+    assert await user.filter_permitted_databases(
+        getattr(ActionType, 'databases:read'),
+        [],
+    ) == []
 
 
 class TestRoleModel(test.TestCase):

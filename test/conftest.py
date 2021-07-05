@@ -70,6 +70,12 @@ async def setup_testdb(auth0_existing_userid):
     )
     role4 = await RoleModel.create(
         name='role4',
+        permissions=[{
+            'databases': ['database3'],
+            'action_ids': [
+                getattr(ActionType, 'databases:read').name,
+            ],
+        }],
     )
 
     from api.models import UserModel

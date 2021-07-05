@@ -86,3 +86,11 @@ class UserResourceOnPatchInputSchema(Schema):
 class PermittedActionsResourceOnGetInputSchema(Schema):
     database_id = fields.Str(required=True)
     user_id = fields.Str()
+
+
+class PermittedDatabasesResourceOnGetInputSchema(Schema):
+    database_ids = fields.List(
+        fields.Str(),
+        required=True,
+    )
+    user_id = fields.Str()
