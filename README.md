@@ -1,10 +1,6 @@
-# api-template-responder
+# api-permission-manager
 
-## First thing to do
-The things you have to do after creating a repository based on this template are as follows:
-- Change `description` in `pyproject.toml` to the description of your API
-- Change `repository` in `pyproject.toml` to the newly created repository
-- Change `homepage` in `pyproject.toml` to your homepage
+API for managing permissions
 
 ## How to build docker-image
 ```bash
