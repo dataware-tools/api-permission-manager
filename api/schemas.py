@@ -94,3 +94,12 @@ class PermittedDatabasesResourceOnGetInputSchema(Schema):
         required=True,
     )
     user_id = fields.Str()
+
+
+class PermittedDatabasesResourceOnGetResponseSchema(Schema):
+    database_ids = fields.List(
+        fields.Str(),
+    )
+    selected_indices = fields.List(
+        fields.Integer(),
+    )
