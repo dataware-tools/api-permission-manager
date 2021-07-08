@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from tortoise.models import Model
 from tortoise import fields
@@ -72,17 +72,28 @@ class UserModel(Model):
 
         return False
 
-    async def filter_permitted_databases(self, action: ActionType, database_ids: List[str]) -> List[str]:
+    async def filter_permitted_databases(
+        self,
+        action: ActionType,
+        database_ids: List[str],
+    ) -> Tuple[List[str], List[int]]:
         """Returns permitted database ids from input list.
 
         Args:
             database_ids (List[str])
 
         Returns:
-            (List[str])
+            permitted_database_ids (List[str]): Ids of permitted databases.
+            permitted_indices (List [int]): Indices of permitted databases in input.
 
         """
-        return [database_id for database_id in database_ids if await self.is_user_permitted_action(action, database_id)]
+        permitted_indices = [
+            i
+            for i, database_id in enumerate(database_ids)
+            if await self.is_user_permitted_action(action, database_id)
+        ]
+        permitted_database_ids = [database_ids[i] for i in permitted_indices]
+        return permitted_database_ids, permitted_indices
 
 
 class RoleModel(Model):
