@@ -123,12 +123,12 @@ async def test_filter_permitted_databases(setup_db_for_test_permission_check):
     assert await user.filter_permitted_databases(
         getattr(ActionType, 'databases:read'),
         ['testpostfix123123', '123123testprefix', 'not_permitted_database'],
-    ) == ['testpostfix123123', '123123testprefix']
+    ) == (['testpostfix123123', '123123testprefix'], [0, 1])
 
     assert await user.filter_permitted_databases(
         getattr(ActionType, 'databases:read'),
         [],
-    ) == []
+    ) == ([], [])
 
 
 class TestRoleModel(test.TestCase):

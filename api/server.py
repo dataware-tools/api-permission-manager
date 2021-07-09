@@ -28,6 +28,7 @@ from api.schemas import (
     UserResourceOnPatchInputSchema,
     PermittedActionsResourceOnGetInputSchema,
     PermittedDatabasesResourceOnGetInputSchema,
+    PermittedDatabasesResourceOnGetResponseSchema,
 )
 from api.settings import ActionType
 from api.utils import (
@@ -578,17 +579,19 @@ class PermittedDatabasesResource():
         # Filter permitted databases
         user = await UserModel.get_or_none(id=user_id)
         if user:
-            permitted_database_ids = await user.filter_permitted_databases(
+            permitted_database_ids, permitted_indices = await user.filter_permitted_databases(
                 getattr(ActionType, 'databases:read'),
                 req_param['database_ids'],
             )
         else:
             permitted_database_ids = []
+            permitted_indices = []
 
         # Serialize role objects
-        output_schema = PermittedDatabasesResourceOnGetInputSchema(only=('database_ids',))
+        output_schema = PermittedDatabasesResourceOnGetResponseSchema()
         serialized_output = output_schema.dump({
             'database_ids': permitted_database_ids,
+            'selected_indices': permitted_indices,
         })
 
         resp.media = serialized_output

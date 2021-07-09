@@ -16,7 +16,9 @@ def test_get_permitted_databases(setup_testdb, api):
     assert r.status_code == 200
     data = json.loads(r.text)
     assert 'database_ids' in data.keys()
+    assert 'selected_indices' in data.keys()
     assert data['database_ids'] == ['database3']
+    assert data['selected_indices'] == [2]
 
 
 def test_get_permitted_databases_no_database_id_400(setup_testdb, api):
