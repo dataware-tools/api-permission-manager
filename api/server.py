@@ -111,7 +111,7 @@ class UsersResource():
             req_param = UsersResourceInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Limit minimum page to 0
@@ -172,7 +172,7 @@ class UserResource():
             user = auth0.users.get(id=user_id)
         except Auth0Error as e:
             resp.status_code = 404
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Add roles if user exists in permission database
@@ -211,7 +211,7 @@ class UserResource():
             req_param = UserResourceOnPatchInputSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Get user info from auth0
@@ -220,7 +220,7 @@ class UserResource():
             user = auth0.users.get(id=user_id)
         except Auth0Error as e:
             resp.status_code = 404
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Get or create user
@@ -235,7 +235,7 @@ class UserResource():
             if role_ids_not_exist:
                 # Return error
                 resp.status_code = 404  # TODO: Check if status code suitable
-                resp.media = {'reason': f'Role ids {role_ids_not_exist} does not exist.'}
+                resp.media = {'detail': f'Role ids {role_ids_not_exist} does not exist.'}
                 return
 
             # Update database
@@ -269,7 +269,7 @@ class RolesResource():
             req_param = RolesResourceOnGetInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Get roles
@@ -310,7 +310,7 @@ class RolesResource():
             req_param = RoleBaseSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Create role object
@@ -339,7 +339,7 @@ class RoleResource():
         role = await RoleModel.get_or_none(id=int(role_id))
         if role is None:
             resp.status_code = 404
-            resp.media = {'reason': f'Role roleid={role_id} does not exist.'}
+            resp.media = {'detail': f'Role roleid={role_id} does not exist.'}
             return
 
         # Serialize role objects
@@ -364,7 +364,7 @@ class RoleResource():
             req_param = RoleBaseSchema().load(req_json, partial=True)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         role_id_int: int = int(role_id)
@@ -373,7 +373,7 @@ class RoleResource():
         role_exists = await RoleModel.exists(id=role_id_int)
         if not role_exists:
             resp.status_code = 404
-            resp.media = {'reason': f'Role roleid={role_id} does not exist.'}
+            resp.media = {'detail': f'Role roleid={role_id} does not exist.'}
             return
 
         # Update role object
@@ -404,7 +404,7 @@ class RoleResource():
         role_exists = await RoleModel.exists(id=role_id_int)
         if not role_exists:
             resp.status_code = 404
-            resp.media = {'reason': f'Role roleid={role_id} does not exist.'}
+            resp.media = {'detail': f'Role roleid={role_id} does not exist.'}
             return
 
         # Delete object
@@ -444,7 +444,7 @@ class ActionResource:
             action_data = ActionType[action_id].describe()
         except KeyError:
             resp.status_code = 404
-            resp.media = {'reason': f'Action {action_id} does not exist.'}
+            resp.media = {'detail': f'Action {action_id} does not exist.'}
             return
 
         resp.status_code = 200
@@ -468,7 +468,7 @@ class PermittedActionsResource:
             req_param = PermittedActionsResourceOnGetInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # TODO: Refactor repetitive code below
@@ -482,7 +482,7 @@ class PermittedActionsResource:
                 user_id: str = jwt_payload['sub']
             except Exception:
                 resp.status_code = 403
-                resp.media = {'reason': 'Invalid signature'}
+                resp.media = {'detail': 'Invalid signature'}
                 return
 
         user = await UserModel.get_or_none(id=user_id)
@@ -509,7 +509,7 @@ class PermittedActionResource:
             req_param = PermittedActionsResourceOnGetInputSchema().load(req.params)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Validate action_id
@@ -517,7 +517,7 @@ class PermittedActionResource:
             action_data = ActionType[action_id]
         except KeyError:
             resp.status_code = 404
-            resp.media = {'reason': f'Action {action_id} does not exist.'}
+            resp.media = {'detail': f'Action {action_id} does not exist.'}
             return
 
         # Get user id if not specified
@@ -529,7 +529,7 @@ class PermittedActionResource:
                 user_id: str = jwt_payload['sub']
             except Exception:
                 resp.status_code = 403
-                resp.media = {'reason': 'Invalid signature'}
+                resp.media = {'detail': 'Invalid signature'}
                 return
 
         # Get whether permitted
@@ -561,7 +561,7 @@ class PermittedDatabasesResource():
             req_param = PermittedDatabasesResourceOnGetInputSchema().load(req_json)
         except ValidationError as e:
             resp.status_code = 400
-            resp.media = {'reason': str(e)}
+            resp.media = {'detail': str(e)}
             return
 
         # Get user id if not specified
@@ -573,7 +573,7 @@ class PermittedDatabasesResource():
                 user_id: str = jwt_payload['sub']
             except Exception:
                 resp.status_code = 403
-                resp.media = {'reason': 'Invalid signature'}
+                resp.media = {'detail': 'Invalid signature'}
                 return
 
         # Filter permitted databases
