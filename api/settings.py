@@ -42,6 +42,13 @@ class ActionTypeMeta(EnumMeta):
         classdict['metadata:write:update'] = 'Update metadata'
         classdict['metadata:write:delete'] = 'Delete metadata'
 
+        # File-related actions
+        classdict['file'] = 'Admin file'
+        classdict['file:read'] = 'Read file'
+        classdict['file:write'] = 'Write file'
+        classdict['file:write:add'] = 'Add file'
+        classdict['file:write:delete'] = 'Delete file'
+
         return super().__new__(mcs, cls, bases, classdict)
 
 
