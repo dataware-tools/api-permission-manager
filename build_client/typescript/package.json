@@ -1,5 +1,9 @@
 {
   "name": "@dataware-tools/api-permission-manager-client",
+  "engines": {
+    "node": "^16.11.0",
+    "npm": "^8.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/dataware-tools/api-permission-manager.git"
