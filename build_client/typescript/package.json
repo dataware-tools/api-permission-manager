@@ -1,8 +1,8 @@
 {
-  "name": "@dataware-tools/api-meta-store-client",
+  "name": "@dataware-tools/api-permission-manager-client",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dataware-tools/api-meta-store.git"
+    "url": "https://github.com/dataware-tools/api-permission-manager.git"
   },
   "exports": {
     "node": {
