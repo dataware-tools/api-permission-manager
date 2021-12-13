@@ -49,6 +49,15 @@ class ActionTypeMeta(EnumMeta):
         classdict['file:write:add'] = 'Add file'
         classdict['file:write:delete'] = 'Delete file'
 
+        # Job-related actions
+        classdict['job'] = 'Admin jobs'
+        classdict['job:execute'] = 'Execute jobs'
+        classdict['job:read'] = 'Read jobs'
+        classdict['job:write'] = 'Write jobs'
+        classdict['job:write:add'] = 'Add jobs'
+        classdict['job:write:update'] = 'Update jobs'
+        classdict['job:write:delete'] = 'Delete jobs'
+
         return super().__new__(mcs, cls, bases, classdict)
 
 
